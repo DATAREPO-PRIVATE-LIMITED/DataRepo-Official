@@ -1,12 +1,14 @@
+import React from "react";
 
-import React from 'react'
+import { RouterProvider } from "react-router-dom";
+import { myRoutes } from "./routes/MyRouter";
 
 const App = () => {
   return (
-    <div>
-      <h1 className='text-teal-600 text-7xl m-auto text-center font-semibold'>DataRepo Officails </h1>
+    <div className="app bg-black">
+      <RouterProvider router={myRoutes} />
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
