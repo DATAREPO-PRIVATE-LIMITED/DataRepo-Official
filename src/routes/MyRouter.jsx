@@ -7,6 +7,7 @@ import Footer from "../components/Footer";
 import Services from "../components/Services"
 import Privacy from "../components/Privacy"
 import Terms from "../components/Terms"
+import MarketPlace from "../components/MarketPlace"
 
 export const myRoutes = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ export const myRoutes = createBrowserRouter([
       {
         path:"/privacy",
         element:<Privacy/>
+      },
+      {
+        path:"/marketplace",
+        element:<MarketPlace/>
       }
     ],
   },

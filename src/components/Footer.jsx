@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-gray-400 py-6 px-4 flex flex-col gap-3">
+    <footer className=" text-foreground py-6 px-4 flex flex-col gap-3">
       {/* Navigation Links */}
       <div className="flex flex-wrap justify-center gap-6 text-xs sm:text-sm font-semibold">
         <Link to="/" className="hover:text-teal-400 transition">
@@ -38,7 +38,7 @@ const Footer = () => {
       {/* GST Info */}
       <div className="text-center text-xs sm:text-sm mt-1">
         "Proudly registered under GST – GSTIN:{" "}
-        <span className="text-white font-semibold">09AALCD4840P1ZZ</span>"
+                 <span className="text-foreground font-semibold">09AALCD4840P1ZZ</span>"
       </div>
     </footer>
   );
