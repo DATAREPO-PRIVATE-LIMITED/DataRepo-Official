@@ -107,7 +107,7 @@ const Contact = () => {
             value={formData.name}
             onChange={handleInputChange}
             placeholder="Name *"
-            className="w-full p-2 sm:p-3 rounded-lg bg-gray-200  placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+            className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 text-black placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
           />
 
           {/* Email */}
@@ -117,7 +117,7 @@ const Contact = () => {
             value={formData.email}
             onChange={handleInputChange}
             placeholder="Email *"
-            className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+            className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 text-black placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
           />
 
           {/* Contact Number */}
@@ -129,7 +129,7 @@ const Contact = () => {
               value={formData.contactNumber}
               onChange={handleInputChange}
               placeholder="Enter contact number"
-              className="w-full p-2 sm:p-3 rounded-lg bg-gray-200  placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+              className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 text-black  placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
             />
           </div>
 
@@ -162,7 +162,7 @@ const Contact = () => {
               value={formData.message}
               onChange={handleInputChange}
               placeholder="Type your message..."
-              className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
+              className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 text-black placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
               rows="4"
             ></textarea>
           </div>
