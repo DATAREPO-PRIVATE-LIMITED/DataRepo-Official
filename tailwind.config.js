@@ -3,6 +3,10 @@ export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+
+      fontFamily: {
+        pacifico: ["Pacifico", "cursive"],
+      },
       keyframes: {
         marquee: {
           "0%": { transform: "translateX(0%)" },

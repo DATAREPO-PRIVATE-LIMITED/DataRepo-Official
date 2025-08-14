@@ -1,9 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Debug: Test if Pacifico font is loaded */
+.font-pacifico {
+  font-family: 'Pacifico', cursive !important;
+}
 
 *{
-  margin-top: 0;
   box-sizing: border-box;
 }
 
@@ -124,6 +128,11 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Ensure Pacifico font is available */
+  .font-pacifico {
+    font-family: 'Pacifico', cursive;
   }
 }
 
