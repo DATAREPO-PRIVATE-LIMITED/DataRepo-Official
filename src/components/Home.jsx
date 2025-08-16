@@ -13,12 +13,12 @@ import {
 } from "react-icons/fa";
 import { GiBrain } from "react-icons/gi";
 
+import { NavLink } from "react-router-dom";
+
 import { HiLightningBolt } from "react-icons/hi";
 import Services from "./Services";
 import Contact2 from "./Contact2";
 import Contact from "./Contact";
-
-
 
 // Animation variants
 const fadeUp = {
@@ -29,58 +29,38 @@ const fadeUp = {
 const Home = () => {
   return (
     <>
-      
       {/* Large Teal Text */}
       {/*  */}
-      <div className="text-center  mt-12 mb-12 px-4">
-        <h1
-          className="
-     
-      font-medium 
-      text-5xl 
-      sm:text-6xl 
-      md:text-7xl 
-      lg:text-8xl 
-      leading-tight
-    "
-        >
-          Data
-          <span
-            className="
-        text-teal-400 
-        font-semibold
-        text-5xl 
-        sm:text-6xl 
-        md:text-7xl 
-        lg:text-8xl
-      "
-          >
-            Repo
-          </span>
-        </h1>
+      <div className="text-center">
+        <h1 className="text-6xl mt-40"> Build Smarter, Launch Faster with </h1>
+        <h2 className="text-[50px] text-teal-400 mb-28 ">
+          Pay-as-You-Use APIs
+        </h2>
       </div>
 
       {/* Hero Section */}
-      <section className="bg-card text-card-foreground max-w-[850px] mx-auto rounded-xl  mb-[-20px] px-8 text-center">
+      <section className=" text-card-foreground max-w-[850px] mx-auto rounded-xl  mb-[-20px] px-8 text-center ">
         {/* Banner */}
-        <div className="inline-flex items-center gap-1 bg-card text-card-foreground text-xs rounded-xl px-4 py-1.5 mb-5 font-medium shadow">
+        <div className="inline-flex items-center gap-1 bg-card text-card-foreground text-xs rounded-xl px-4 py-1.5 mb-3 font-medium shadow ">
           <HiLightningBolt className="text-green-500" />
-          Get ready to level up your digital presence 🚀
+          Power Your Products with Next‑Gen APIs 🚀
         </div>
 
         {/* Headline */}
-        <h1 className="text-3xl md:text-4xl font-normal m-0 leading-tight">
-          We Create <span className="text-teal-400 font-medium">Websites</span>{" "}
-          that Sell &amp; <span className="text-teal-400 font-medium">Ads</span>{" "}
-          that Convert
+        <h1 className="text-xl md:text-3xl font-semibold m-0 leading-tight tracking-wider ">
+          We help you integrate{" "}
+          <span className="text-teal-400 font-semibold mb-8"> reliable APIs </span>
+           without the hassle of subscriptions.
         </h1>
       </section>
 
       {/* Why us  */}
       <Services />
 
+
+
       {/*  contact part 1 and 2 */}
-      <section className="contact-us flex flex-col lg:flex-row justify-around">
+      <section className="contact-us flex flex-col lg:flex-row justify-around mt-10 p-2">
         <div className="w-full lg:w-1/2">
           <Contact2 />
         </div>
@@ -88,7 +68,6 @@ const Home = () => {
           <Contact />
         </div>
       </section>
-
     </>
   );
 };

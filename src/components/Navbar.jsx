@@ -6,9 +6,9 @@ import { ModeToggle } from "./ModeToggle";
 
 const menuItems = [
   { name: "Home", path: "/" },
-  { name: "Services", path: "/services" },
+  { name: "MarketPlace", path: "/Services" },
   { name: "About Us", path: "/about" },
-  { name: "MarketPlace", path: "/marketplace" },
+  
 ];
 
 const Navbar = () => {

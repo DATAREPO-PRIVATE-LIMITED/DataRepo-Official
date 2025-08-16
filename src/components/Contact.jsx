@@ -1,96 +1,62 @@
-import React, { useState } from "react";
-import { toast } from "react-toastify";
+"use client";
+
+import React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const FormSchema = z.object({
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
+  }),
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  contactNumber: z.string().optional(),
+
+  message: z.string().optional(),
+});
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    contactNumber: "",
-    services: [],
-    message: "",
+  // const serviceOptions = [
+  //   "Micro SaaS Development",
+  //   "Application Development",
+  //   "2D & 3D Website Development",
+  //   "Custom AI Development",
+  //   "Digital Marketing",
+  // ];
+
+  const form = useForm({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      contactNumber: "",
+      message: "",
+    },
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const serviceOptions = [
-    "Micro SaaS Development",
-    "Application Development",
-    "2D & 3D Website Development",
-    "Custom AI Development",
-    "Digital Marketing",
-  ];
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleServiceChange = (service) => {
-    setFormData(prev => ({
-      ...prev,
-      services: prev.services.includes(service)
-        ? prev.services.filter(s => s !== service)
-        : [...prev.services, service]
-    }));
-  };
-
-  const validateForm = () => {
-    if (!formData.name.trim()) {
-      toast.error("Name is required");
-      return false;
-    }
-    if (!formData.email.trim()) {
-      toast.error("Email is required");
-      return false;
-    }
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      toast.error("Please enter a valid email address");
-      return false;
-    }
-    if (formData.services.length === 0) {
-      toast.error("Please select at least one service");
-      return false;
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Here you would typically send the data to your backend
-      console.log("Form submitted:", formData);
-      
-      toast.success("Thank you! Your message has been sent successfully. We'll get back to you soon!");
-      
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        contactNumber: "",
-        services: [],
-        message: "",
-      });
-      
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      toast.error("Something went wrong. Please try again later.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  function onSubmit(data) {
+    console.log("Form submitted:", data);
+    toast.success(
+      "Thank you! Your message has been sent successfully. We'll get back to you soon!"
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -99,91 +65,140 @@ const Contact = () => {
           Let's work <span className="text-teal-500">together.</span>
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-          {/* Name */}
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            placeholder="Name *"
-            className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 text-black placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
-          />
-
-          {/* Email */}
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Email *"
-            className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 text-black placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
-          />
-
-          {/* Contact Number */}
-          <div>
-            <label className="block mb-2">Contact Number</label>
-            <input
-              type="tel"
-              name="contactNumber"
-              value={formData.contactNumber}
-              onChange={handleInputChange}
-              placeholder="Enter contact number"
-              className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 text-black  placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
-            />
-          </div>
-
-          {/* I Need */}
-          <div>
-            <label className="block mb-4">I Need *</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 ">
-              {serviceOptions.map((service, idx) => (
-                <label
-                  key={idx}
-                  className="flex items-center space-x-2 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.services.includes(service)}
-                    onChange={() => handleServiceChange(service)}
-                    className="w-4 h-4 accent-teal-500"
-                  />
-                  <span>{service}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Your Message */}
-          <div>
-            <label className="block mb-2">Your Message</label>
-            <textarea
-              name="message"
-              value={formData.message}
-              onChange={handleInputChange}
-              placeholder="Type your message..."
-              className="w-full p-2 sm:p-3 rounded-lg bg-gray-200 text-black placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500 text-sm sm:text-base"
-              rows="4"
-            ></textarea>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-full p-2 sm:p-3 rounded-lg transition text-sm sm:text-base font-medium ${
-              isSubmitting
-                ? "bg-teal-400 text-gray-400 cursor-not-allowed"
-                : "bg-teal-500 hover:bg-teal-600 "
-            }`}
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 sm:space-y-6"
           >
-            {isSubmitting ? "Sending..." : "Send Message"}
-          </button>
-        </form>
+            {/* Name */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Email */}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter your email"
+                      type="email"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Contact Number */}
+            <FormField
+              control={form.control}
+              name="contactNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter contact number"
+                      type="tel"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Services */}
+            {/* <FormField
+              control={form.control}
+              name="services"
+              render={() => (
+                <FormItem>
+                  <FormLabel>I Need *</FormLabel>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {serviceOptions.map((service, idx) => (
+                      <FormField
+                        key={idx}
+                        control={form.control}
+                        name="services"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={idx}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(service)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([...field.value, service])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== service
+                                          )
+                                        )
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {service}
+                              </FormLabel>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            /> */}
+
+            {/* Message */}
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Your Message</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Type your message..."
+                      className="resize-none h-20"
+                      rows="4"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Submit Button */}
+            <Button type="submit" className="w-full ">
+              Send Message
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
   );
 };
 
 export default Contact;
-
