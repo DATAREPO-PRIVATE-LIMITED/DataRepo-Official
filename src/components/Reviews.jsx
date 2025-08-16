@@ -22,7 +22,7 @@ const Reviews = () => {
   ];
 
   return (
-    <div className="mb-16">
+    <div className="mb-16 mt-16">
       {/* Reviews Header */}
       <div className="text-center mb-8 ">
         <span className="bg-teal-500/20 text-teal-400 px-4 py-1 rounded-full text-sm">
@@ -36,7 +36,7 @@ const Reviews = () => {
    
 
       {/* Reviews Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 ml-2 mr-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 ml-4 mr-4 px-2 py-2 ">
         {reviews.map((review, index) => (
           <div
             key={index}

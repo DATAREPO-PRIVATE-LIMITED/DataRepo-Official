@@ -3,25 +3,18 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className=" text-foreground py-6 px-4 flex flex-col gap-3">
+    <footer className="text-foreground py-6 px-4 flex flex-col gap-3">
       {/* Navigation Links */}
       <div className="flex flex-wrap justify-center gap-6 text-xs sm:text-sm font-semibold">
-        <Link to="/" className="hover:text-teal-400 transition">
-          HOME
-        </Link>
-        <Link to="/about" className="hover:text-teal-400 transition">
-          ABOUT
-        </Link>
-        <Link to="/services" className="hover:text-teal-400 transition">
-          SERVICE
+       
+        <Link to="/refund" className="hover:text-teal-400 transition">
+          Refund Policy
         </Link>
 
-        <Link to="/contact" className="hover:text-teal-400 transition">
-          CONTACT
-        </Link>
         <Link to="/privacy" className="hover:text-teal-400 transition">
           PRIVACY POLICY
         </Link>
+        
         <Link to="/terms" className="hover:text-teal-400 transition">
           TERMS & CONDITIONS
         </Link>

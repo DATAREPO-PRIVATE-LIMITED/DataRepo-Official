@@ -4,10 +4,14 @@ import Home from "../components/Home";
 import Layout from "../components/Layout";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
-import Services from "../components/Services"
-import Privacy from "../components/Privacy"
-import Terms from "../components/Terms"
-import MarketPlace from "../components/MarketPlace"
+import Services from "../components/Services";
+import Privacy from "../components/Privacy";
+import Terms from "../components/Terms";
+import Refund from "../components/Refund";
+import Signup from "../components/Signup";
+import Signin from "../components/Signin";
+import ForgotPassword from "../components/ForgotPassword";
+import Docs from "../components/Docs";
 
 export const myRoutes = createBrowserRouter([
   {
@@ -23,25 +27,41 @@ export const myRoutes = createBrowserRouter([
         element: <About />,
       },
       {
+        path: "/refund",
+        element: <Refund />,
+      },
+      {
         path: "/contact",
         element: <Contact />,
       },
       {
-        path:"/services",
-        element:<Services/>
+        path: "/docs",
+        element: <Docs />,
       },
       {
-        path:"/terms",
-        element:<Terms/>
+        path: "/services",
+        element: <Services />,
       },
       {
-        path:"/privacy",
-        element:<Privacy/>
+        path: "/terms",
+        element: <Terms />,
       },
       {
-        path:"/marketplace",
-        element:<MarketPlace/>
-      }
+        path: "/privacy",
+        element: <Privacy />,
+      },
+      {
+        path: "/signup",
+        element: <Signup />,
+      },
+      {
+        path: "/signin",
+        element: <Signin />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
+      },
     ],
   },
 ]);
