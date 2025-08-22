@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiArrowUpRight, FiMenu, FiX, FiLogOut, FiUser } from "react-icons/fi";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { ModeToggle } from "./ModeToggle";
 import { useAuth } from "../context/AuthContext";
 
@@ -19,6 +19,7 @@ const adminMenuItems = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <nav className="w-full flex justify-center mt-5">
@@ -87,7 +88,12 @@ const Navbar = () => {
                )}
                <motion.button
                  whileHover={{ scale: 1.05 }}
-                 onClick={logout}
+                 onClick={async () => {
+                   const result = await logout();
+                   if (result.success) {
+                     navigate('/');
+                   }
+                 }}
                  className="flex items-center gap-2 px-4 py-2 text-[15px] bg-card border border-border rounded-xl transition-colors duration-200 shadow-md hover:border-foreground "
                >
                  Logout
@@ -179,8 +185,11 @@ const Navbar = () => {
                          {user?.fullName || user?.email}
                        </div>
                        <button
-                         onClick={() => {
-                           logout();
+                         onClick={async () => {
+                           const result = await logout();
+                           if (result.success) {
+                             navigate('/');
+                           }
                            setIsOpen(false);
                          }}
                          className="flex items-center gap-2 px-4 py-2 border rounded-full transition-colors duration-200 hover:text-white shadow-md"
