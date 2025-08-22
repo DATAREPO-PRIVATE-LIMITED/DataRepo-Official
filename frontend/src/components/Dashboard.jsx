@@ -140,7 +140,7 @@ const Dashboard = () => {
 
 
 {/* Settings Options */}
-         <div className="flex items-center space-x-2">
+         {/* <div className="flex items-center space-x-2">
               <Button variant="outline" size="sm">
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
@@ -149,7 +149,7 @@ const Dashboard = () => {
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
               </Button>
-            </div>
+            </div> */}
 
          <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
                      {/* User Profile Card */}

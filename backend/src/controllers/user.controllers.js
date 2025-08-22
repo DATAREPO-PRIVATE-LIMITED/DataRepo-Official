@@ -68,8 +68,8 @@ const login = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
-         secure: false,
-          sameSite: "Lax",
+         secure: true,
+          sameSite: "None",
   maxAge: 7 * 24 * 60 * 60 * 1000
     }
 
@@ -87,23 +87,22 @@ const logout = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.myUser?._id);
     if (user) {
-        user.refreshToken = "";
+        user.refreshToken = null;
         await user.save({ validateBeforeSave: false });
     }
 
     const options = {
         httpOnly: true,
-        secure: false,
-         sameSite: "Lax",
+        secure: true,
+        sameSite: "None"
  
     };
 
     res.status(200)
-        .clearCookie("accessToken", " ", options)
-        .clearCookie("refreshToken", " ", options)
-        .json(
-            new ApiResponse("user logout sucessfully", 200)
-        )
+        .clearCookie("accessToken", options)
+  .clearCookie("refreshToken", options)
+  .status(200)
+  .json(new ApiResponse("User logout successfully", 200));
 
 })
 
