@@ -45,7 +45,7 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
-  // const { user, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
@@ -167,11 +167,10 @@ const AdminDashboard = () => {
   ];
 
   const handleLogout = async () => {
-    // const result = await logout();
-    // if (result.success) {
-    //   navigate('/');
-    // }
-    navigate('/');
+    const result = await logout();
+    if (result.success) {
+      navigate('/');
+    }
   };
 
   const getStatusColor = (status) => {
@@ -231,6 +230,12 @@ const AdminDashboard = () => {
                 <h1 className="text-2xl font-bold">Admin Dashboard</h1>
                 <p className="text-sm text-muted-foreground">Manage your platform</p>
               </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
             </div>
            
           </div>
