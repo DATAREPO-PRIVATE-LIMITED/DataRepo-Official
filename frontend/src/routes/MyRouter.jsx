@@ -15,8 +15,10 @@ import Docs from "../components/Docs";
 import Dashboard from "../components/Dashboard";
 import AdminDashboard from "../components/AdminDashboard";
 import PublishApi from "../components/PublishApi";
+import Store from "../components/Store";
 import ProtectedRoute from "../components/ProtectedRoute";
 import AdminProtectedRoute from "../components/AdminProtectedRoute";
+import Market from "../components/Market";
 
 export const myRoutes = createBrowserRouter([
   {
@@ -44,8 +46,8 @@ export const myRoutes = createBrowserRouter([
         element: <Docs />,
       },
       {
-        path: "/services",
-        element: <Services />,
+        path: "/market",
+        element: <Market/>,
       },
       {
         path: "/terms",
@@ -78,6 +80,10 @@ export const myRoutes = createBrowserRouter([
       {
         path: "/publish-api",
         element: <AdminProtectedRoute><PublishApi /></AdminProtectedRoute>,
+      },
+      {
+        path: "/store",
+        element: <Store />,
       },
     ],
   },
