@@ -4,6 +4,8 @@ import ErrorHandler from "../utils/ErrorHandler.js"
 import ApiResponse from "../utils/ApiResponse.js"
 import asyncHandler from "../utils/asyncHandler.js"
 import jwt from "jsonwebtoken"
+import { Enquiry } from "../models/enquiry.models.js"
+import { Api } from "../models/api.models.js"
 
 const generateAccesTokenAndRefreshToken = async (userId) => {
     try {
@@ -48,8 +50,8 @@ const register = asyncHandler(async (req, res) => {
 
 
     res.status(201).json(
-            new ApiResponse("user register succesfully ", user, 201)
-        )
+        new ApiResponse("user register succesfully ", user, 201)
+    )
 })
 
 const login = asyncHandler(async (req, res) => {
@@ -68,9 +70,9 @@ const login = asyncHandler(async (req, res) => {
 
     const options = {
         httpOnly: true,
-         secure: true,
-          sameSite: "None",
-  maxAge: 7 * 24 * 60 * 60 * 1000
+        secure: true,
+        sameSite: "None",
+        maxAge: 7 * 24 * 60 * 60 * 1000
     }
 
     res.status(200)
@@ -95,14 +97,14 @@ const logout = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: true,
         sameSite: "None"
- 
+
     };
 
     res.status(200)
         .clearCookie("accessToken", options)
-  .clearCookie("refreshToken", options)
-  .status(200)
-  .json(new ApiResponse("User logout successfully", 200));
+        .clearCookie("refreshToken", options)
+        .status(200)
+        .json(new ApiResponse("User logout successfully", 200));
 
 })
 
@@ -159,5 +161,40 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 })
 
 
-export { register, login, refreshAccessToken, logout, getCurrentUser }
+
+// enqires
+
+const addEquiry = asyncHandler(async (req, res) => {
+
+    let { name, email, mobile, message } = req.body;
+
+    let enquiryData = await Enquiry.create({
+        name,
+        email,
+        mobile,
+        message
+    })
+
+    res.status(201).json(
+        new ApiResponse("message send to our team ", enquiryData, 2001)
+    )
+
+
+})
+
+
+const getAllApi = asyncHandler(async (req, res) => {
+
+    let apis = await Api.find()
+
+    if (!apis) {
+        throw new ErrorHandler("unable to fetch apis list", 404)
+    }
+
+    res.status(200).json(
+        new ApiResponse("apis list fetched succesfully", apis, 200)
+    )
+})
+
+export { register, login, refreshAccessToken, logout, getCurrentUser, addEquiry, getAllApi }
 

@@ -33,10 +33,15 @@ import {
 } from 'lucide-react';
 import { Label } from './ui/label';
 
+
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+
+
+
+
   
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);

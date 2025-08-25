@@ -2,13 +2,40 @@ import { User } from "../models/user.models.js"
 import ErrorHandler from "../utils/ErrorHandler.js"
 import ApiResponse from "../utils/ApiResponse.js"
 import asyncHandler from "../utils/asyncHandler.js"
+import { Api } from "../models/api.models.js"
+
+const addApi = asyncHandler(async (req, res) => {
+
+    let { name, category, description, baseUrl, version, priceModel, rateLimit, tags, docsUrl } = req.body
+
+
+    const api = await Api.create({
+        name,
+        category,
+        description,
+        baseUrl,
+        version,
+        priceModel,
+        rateLimit,
+        tags,
+        docsUrl
+    })
+
+    if (!api) {
+        throw new ErrorHandler("unable to publish api", 400)
+    }
+
+    res.status(201).json(
+        new ApiResponse("Api publish successfully", api, 200)
+    )
+})
 
 // Get all users with pagination and filtering
 const getAllUsers = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, search = "", status = "", role = "" } = req.query;
-    
+
     const skip = (page - 1) * limit;
-    
+
     // Build filter object
     const filter = {};
     if (search) {
@@ -19,16 +46,16 @@ const getAllUsers = asyncHandler(async (req, res) => {
     }
     if (status) filter.status = status;
     if (role) filter.role = role;
-    
+
     const users = await User.find(filter)
         .select('-password -refreshToken')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(parseInt(limit));
-    
+
     const totalUsers = await User.countDocuments(filter);
     const totalPages = Math.ceil(totalUsers / limit);
-    
+
     res.status(200).json(
         new ApiResponse("Users fetched successfully", {
             users,
@@ -46,13 +73,13 @@ const getAllUsers = asyncHandler(async (req, res) => {
 // Get user by ID with detailed information
 const getUserById = asyncHandler(async (req, res) => {
     const { userId } = req.params;
-    
+
     const user = await User.findById(userId).select('-password -refreshToken');
-    
+
     if (!user) {
         throw new ErrorHandler("User not found", 404);
     }
-    
+
     // Mock API usage data for the user
     const userStats = {
         totalApiCalls: Math.floor(Math.random() * 50000) + 1000,
@@ -62,7 +89,7 @@ const getUserById = asyncHandler(async (req, res) => {
         lastApiCall: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
         averageResponseTime: Math.floor(Math.random() * 500) + 100
     };
-    
+
     res.status(200).json(
         new ApiResponse("User details fetched successfully", {
             user,
@@ -71,29 +98,6 @@ const getUserById = asyncHandler(async (req, res) => {
     );
 });
 
-// Update user status (activate/suspend)
-const updateUserStatus = asyncHandler(async (req, res) => {
-    const { userId } = req.params;
-    const { status } = req.body;
-    
-    if (!['active', 'suspended'].includes(status)) {
-        throw new ErrorHandler("Invalid status. Must be 'active' or 'suspended'", 400);
-    }
-    
-    const user = await User.findByIdAndUpdate(
-        userId,
-        { status },
-        { new: true }
-    ).select('-password -refreshToken');
-    
-    if (!user) {
-        throw new ErrorHandler("User not found", 404);
-    }
-    
-    res.status(200).json(
-        new ApiResponse("User status updated successfully", user, 200)
-    );
-});
 
 // Get dashboard statistics
 const getDashboardStats = asyncHandler(async (req, res) => {
@@ -103,7 +107,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
     const newUsersThisMonth = await User.countDocuments({
         createdAt: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
     });
-    
+
     // Mock revenue and API usage data
     const stats = {
         users: {
@@ -132,7 +136,7 @@ const getDashboardStats = asyncHandler(async (req, res) => {
             systemHealth: 99.8
         }
     };
-    
+
     res.status(200).json(
         new ApiResponse("Dashboard statistics fetched successfully", stats, 200)
     );
@@ -183,7 +187,7 @@ const getServicesStatus = asyncHandler(async (req, res) => {
             lastChecked: new Date()
         }
     ];
-    
+
     res.status(200).json(
         new ApiResponse("Services status fetched successfully", services, 200)
     );
@@ -192,9 +196,9 @@ const getServicesStatus = asyncHandler(async (req, res) => {
 // Get billing and revenue data
 const getBillingData = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, status = "" } = req.query;
-    
+
     const skip = (page - 1) * limit;
-    
+
     // Mock billing data - in real implementation, this would come from actual billing system
     const mockBillingData = [
         {
@@ -234,16 +238,16 @@ const getBillingData = asyncHandler(async (req, res) => {
             services: ['Data API', 'Analytics API', 'ML API']
         }
     ];
-    
+
     let filteredData = mockBillingData;
     if (status) {
         filteredData = mockBillingData.filter(item => item.status === status);
     }
-    
+
     const totalItems = filteredData.length;
     const totalPages = Math.ceil(totalItems / limit);
     const paginatedData = filteredData.slice(skip, skip + parseInt(limit));
-    
+
     res.status(200).json(
         new ApiResponse("Billing data fetched successfully", {
             billingData: paginatedData,
@@ -261,7 +265,7 @@ const getBillingData = asyncHandler(async (req, res) => {
 // Get analytics data
 const getAnalyticsData = asyncHandler(async (req, res) => {
     const { period = 'month' } = req.query;
-    
+
     // Mock analytics data - in real implementation, this would come from actual analytics system
     const analytics = {
         apiUsage: {
@@ -300,88 +304,20 @@ const getAnalyticsData = asyncHandler(async (req, res) => {
             mostActiveHours: [10, 14, 16, 20]
         }
     };
-    
+
     res.status(200).json(
         new ApiResponse("Analytics data fetched successfully", analytics, 200)
     );
 });
 
-// Create new user (admin only)
-const createUser = asyncHandler(async (req, res) => {
-    const { name, email, password, role = 'user', status = 'active' } = req.body;
-    
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        throw new ErrorHandler("User with this email already exists", 400);
-    }
-    
-    // Create new user
-    const user = await User.create({
-        name,
-        email,
-        password,
-        role,
-        status
-    });
-    
-    const userResponse = await User.findById(user._id).select('-password -refreshToken');
-    
-    res.status(201).json(
-        new ApiResponse("User created successfully", userResponse, 201)
-    );
-});
-
-// Delete user (admin only)
-const deleteUser = asyncHandler(async (req, res) => {
-    const { userId } = req.params;
-    
-    const user = await User.findByIdAndDelete(userId);
-    
-    if (!user) {
-        throw new ErrorHandler("User not found", 404);
-    }
-    
-    res.status(200).json(
-        new ApiResponse("User deleted successfully", null, 200)
-    );
-});
-
-// Update user (admin only)
-const updateUser = asyncHandler(async (req, res) => {
-    const { userId } = req.params;
-    const { name, email, role, status } = req.body;
-    
-    const updateData = {};
-    if (name) updateData.name = name;
-    if (email) updateData.email = email;
-    if (role) updateData.role = role;
-    if (status) updateData.status = status;
-    
-    const user = await User.findByIdAndUpdate(
-        userId,
-        updateData,
-        { new: true }
-    ).select('-password -refreshToken');
-    
-    if (!user) {
-        throw new ErrorHandler("User not found", 404);
-    }
-    
-    res.status(200).json(
-        new ApiResponse("User updated successfully", user, 200)
-    );
-});
 
 export {
     getAllUsers,
     getUserById,
-    updateUserStatus,
     getDashboardStats,
     getServicesStatus,
     getBillingData,
     getAnalyticsData,
-    createUser,
-    deleteUser,
-    updateUser
+    addApi
+
 };

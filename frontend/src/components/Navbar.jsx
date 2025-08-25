@@ -5,6 +5,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { ModeToggle } from "./ModeToggle";
 import { useAuth } from "../context/AuthContext";
 
+
 const menuItems = [
   { name: "Home", path: "/" },
   { name: "MarketPlace", path: "/market" },
@@ -20,6 +21,9 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  console.log("user----->", user);
+  
 
   return (
     <nav className="w-full flex justify-center mt-5">
@@ -98,7 +102,7 @@ const Navbar = () => {
               boxShadow: "0 0 14px rgba(var(--primary), 0.3)",
             }}
           >
-            <NavLink
+            { isAuthenticated && user?.role == "admin" ? "" : <NavLink
               to="/contact"
               className={({ isActive }) =>
                 `flex items-center gap-2 px-5 py-2 text-[15px] bg-card border rounded-xl transition-colors  duration-200 shadow-md hover:border-primary ${
@@ -110,7 +114,7 @@ const Navbar = () => {
             >
               Let's Talk
               <FiArrowUpRight className="ml-1" />
-            </NavLink>
+            </NavLink>}
           </motion.div>
         </div>
 
