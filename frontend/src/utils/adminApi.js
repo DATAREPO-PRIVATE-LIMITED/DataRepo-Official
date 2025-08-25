@@ -1,40 +1,15 @@
-import axios from 'axios';
+import { AxiosInstance } from '../routes/axiosInstance';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:9000/api';
+// Use shared AxiosInstance and prefix admin routes
+const adminApi = {
+  get: (url, config) => AxiosInstance.get(`/admin${url}`, config),
+  post: (url, data, config) => AxiosInstance.post(`/admin${url}`, data, config),
+  put: (url, data, config) => AxiosInstance.put(`/admin${url}`, data, config),
+  patch: (url, data, config) => AxiosInstance.patch(`/admin${url}`, data, config),
+  delete: (url, config) => AxiosInstance.delete(`/admin${url}`, config),
+};
 
-// Create axios instance with default config
-const adminApi = axios.create({
-  baseURL: `${API_BASE_URL}/admin`,
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
-// Request interceptor to add auth token
-adminApi.interceptors.request.use(
-  (config) => {
-    // You can add auth token here if needed
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor for error handling
-adminApi.interceptors.response.use(
-  (response) => {
-    return response.data;
-  },
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      window.location.href = '/signin';
-    }
-    return Promise.reject(error.response?.data || error);
-  }
-);
 
 // Dashboard and Statistics
 export const getDashboardStats = () => {
