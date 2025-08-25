@@ -81,3 +81,23 @@ export const getBillingData = (params = {}) => {
 };
 
 export default adminApi;
+
+// Admin: Publish a new API
+export const publishApi = (formData) => {
+  const payload = {
+    name: formData.name,
+    category: formData.category,
+    description: formData.description,
+    baseUrl: formData.baseUrl,
+    version: (() => {
+      // Backend expects Number; coerce from possible "1.0.0" format
+      const numeric = parseFloat(String(formData.version || '1'));
+      return Number.isFinite(numeric) ? numeric : 1;
+    })(),
+    priceModel: formData.pricing === 'free' ? 'Free' : 'Pay Per Use',
+    rateLimit: formData.rateLimit ? Number(formData.rateLimit) : undefined,
+    tags: Array.isArray(formData.tags) ? formData.tags : [],
+    docsUrl: formData.documentation || ''
+  };
+  return adminApi.post('/add-api', payload);
+};

@@ -22,6 +22,7 @@ import {
   Plus,
   X
 } from 'lucide-react';
+import { publishApi } from '../utils/adminApi';
 
 const PublishApi = () => {
   const { user } = useAuth();
@@ -148,13 +149,11 @@ const PublishApi = () => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      const res = await publishApi(formData);
       setSuccess(true);
       setTimeout(() => {
         navigate('/admin');
-      }, 2000);
+      }, 1500);
     } catch (error) {
       console.error('Error publishing API:', error);
     } finally {
