@@ -250,6 +250,54 @@ const Dashboard = () => {
     }
   };
 
+  // Quick Actions handlers
+  const handleGoToApiKeys = () => {
+    setActiveTab('apikeys');
+  };
+
+  const handleGoToBilling = () => {
+    setActiveTab('billing');
+  };
+
+  const handleGoToAnalytics = () => {
+    setActiveTab('analytics');
+  };
+
+  // const handleDownloadInvoices = () => {
+  //   try {
+  //     // Export mock invoices to CSV (replace with real data when backend is ready)
+  //     const rows = [
+  //       ['Invoice ID', 'Date', 'Amount', 'Status', 'Description'],
+  //       ...mockInvoices.map(inv => [
+  //         inv.id,
+  //         inv.date,
+  //         inv.amount,
+  //         inv.status,
+  //         inv.description
+  //       ])
+  //     ];
+  //     const csvContent = rows
+  //       .map(r => r
+  //         .map(value => {
+  //           const cell = String(value ?? '');
+  //           const needsQuotes = /[",\n]/.test(cell);
+  //           const escaped = cell.replace(/"/g, '""');
+  //           return needsQuotes ? `"${escaped}"` : escaped;
+  //         })
+  //         .join(','))
+  //       .join('\n');
+  //     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  //     const url = URL.createObjectURL(blob);
+  //     const link = document.createElement('a');
+  //     link.href = url;
+  //     link.download = 'invoices.csv';
+  //     link.click();
+  //     URL.revokeObjectURL(url);
+  //   } catch (err) {
+  //     console.error('Failed to download invoices:', err);
+  //   }
+  // };
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'profile', label: 'Profile', icon: User },
@@ -261,7 +309,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background text-foreground mt-12">
       {/* Header */}
-      <div className="border-b bg-card w-[80%] mx-auto rounded-xl">
+      {/* <div className="border-b bg-card w-full sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto rounded-xl">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -281,18 +329,18 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-8 bg-muted/30 rounded-lg p-1">
+        <div className="flex space-x-1 mb-8 bg-muted/30 rounded-lg p-1 overflow-x-auto whitespace-nowrap scrollbar-thin -mx-2 px-2 sm:mx-0 sm:px-0 snap-x snap-mandatory">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-2 px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors flex-shrink-0 snap-start ${
                   activeTab === tab.id
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
@@ -309,8 +357,8 @@ const Dashboard = () => {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Welcome Banner */}
-            <div className="p-8 bg-card via-primary/5 to-primary/10 rounded-xl border border-primary/20 shadow-sm">
-              <div className="flex items-center space-x-6">
+            {/* <div className="p-6 sm:p-8 bg-card via-primary/5 to-primary/10 rounded-xl border border-primary/20 shadow-sm">
+              <div className="flex flex-col md:flex-row items-center md:items-center md:space-x-6 gap-4">
                 <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-lg">
                   <User className="w-8 h-8 text-primary-foreground" />
                 </div>
@@ -322,12 +370,12 @@ const Dashboard = () => {
                     Here's your API marketplace overview for this month
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="md:text-right text-center w-full md:w-auto">
                   <p className="text-sm text-muted-foreground">Current Month</p>
                   <p className="text-2xl font-bold text-primary">${mockBillingData.currentMonthBill}</p>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -395,19 +443,20 @@ const Dashboard = () => {
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full justify-start">
+                  <Button className="w-full justify-start" onClick={handleGoToApiKeys}>
                     <Key className="w-4 h-4 mr-2" />
                     Generate New API Key
+                    
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" onClick={handleGoToBilling}>
                     <CreditCard className="w-4 h-4 mr-2" />
                     Update Payment Method
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" onClick={handleGoToAnalytics}>
                     <BarChart3 className="w-4 h-4 mr-2" />
                     View Usage Analytics
                   </Button>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="outline" className="w-full justify-start" >
                     <Receipt className="w-4 h-4 mr-2" />
                     Download Invoices
                   </Button>

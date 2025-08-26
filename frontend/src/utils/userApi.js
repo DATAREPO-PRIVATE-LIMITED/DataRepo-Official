@@ -37,3 +37,4 @@ export const submitEnquiry = async (payload) => {
   const resp = await AxiosInstance.post("/users/contact", payload);
   return resp.data;
 };
+

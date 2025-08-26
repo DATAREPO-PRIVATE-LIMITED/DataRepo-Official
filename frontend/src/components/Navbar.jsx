@@ -26,8 +26,8 @@ const Navbar = () => {
   
 
   return (
-    <nav className="w-full flex justify-center mt-5">
-      <div className="w-[65%] max-w-6xl bg-card flex items-center justify-between py-2 pl-7 pr-3 rounded-full shadow-lg border border-border relative">
+    <nav className="w-full flex justify-center mt-5 px-3 sm:px-4 sticky top-0 z-50">
+      <div className="w-full sm:w-[92%] md:w-[100%] lg:w-[75%] xl:w-[65%] max-w-6xl bg-card/80 backdrop-blur-md flex items-center justify-between py-2 pl-5 sm:pl-7 pr-3 rounded-full shadow-lg border border-border relative">
         {/* Logo */}
         <motion.div
           className="flex-shrink-0 "
@@ -42,7 +42,7 @@ const Navbar = () => {
         </motion.div>
 
         {/* Desktop Menu */}
-        <ul className="hidden md:flex items-center flex-1 justify-center">
+        <ul className="hidden lg:flex items-center flex-1 justify-center">
           {(user?.role === "admin" ? adminMenuItems : menuItems).map((item) => (
             <li key={item.name}>
               <NavLink
@@ -63,7 +63,7 @@ const Navbar = () => {
         </ul>
 
         {/* Desktop CTA and Mode Toggle */}
-        <div className="hidden md:flex items-center gap-3 ml-2">
+        <div className="hidden lg:flex items-center gap-3 ml-2">
           <ModeToggle />
           {isAuthenticated && (
             <div className="flex items-center gap-3">
@@ -76,12 +76,12 @@ const Navbar = () => {
                   <span>{user?.fullName || user?.email}</span>
                 </NavLink>
               ) : (
-                <div className="flex items-center gap-2 px-3 py-2 text-sm text-foreground/80">
+                <div className="flex items-center gap-2 px-3 py-2 text-sm text-foreground/80 max-w-[180px] sm:max-w-none">
                   <FiUser className="w-4 h-4" />
-                  <span>{user?.fullName || user?.email}</span>
+                  <span className="truncate">{user?.fullName || user?.email}</span>
                 </div>
               )}
-              <motion.button
+              {/* <motion.button
                 whileHover={{ scale: 1.05 }}
                 onClick={async () => {
                   const result = await logout();
@@ -93,7 +93,7 @@ const Navbar = () => {
               >
                 Logout
                 <FiLogOut className="ml-1" />
-              </motion.button>
+              </motion.button> */}
             </div>
           )}
           <motion.div
@@ -120,8 +120,11 @@ const Navbar = () => {
 
         {/* Mobile Menu Toggle */}
         <button
-          className="md:hidden text-2xl text-foreground"
+          className="lg:hidden text-2xl text-foreground"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label="Toggle menu"
+          aria-controls="mobile-menu"
+          aria-expanded={isOpen}
         >
           {isOpen ? <FiX /> : <FiMenu />}
         </button>
@@ -130,7 +133,8 @@ const Navbar = () => {
         <AnimatePresence>
           {isOpen && (
             <motion.div
-              className="absolute top-14 left-0 w-full bg-card p-6 rounded-b-2xl z-50 md:hidden"
+              id="mobile-menu"
+              className="absolute top-14 left-0 w-full bg-card/95 backdrop-blur-md p-6 rounded-b-2xl z-50 lg:hidden max-h-[70vh] overflow-y-auto shadow-xl"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}

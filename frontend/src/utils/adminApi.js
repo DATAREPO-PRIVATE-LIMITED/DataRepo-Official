@@ -76,3 +76,12 @@ export const publishApi = (formData) => {
   };
   return adminApi.post('/add-api', payload);
 };
+
+
+// get Enquiry data
+export const getEnquiryData = async () => {
+  const resp = await AxiosInstance.get("/admin/get-enquires");
+
+
+  return resp.data;
+};

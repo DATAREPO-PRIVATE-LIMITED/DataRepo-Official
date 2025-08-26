@@ -8,6 +8,7 @@ import {
     getBillingData,
     getAnalyticsData,
     addApi,
+    getEnquiryData,
 
 } from "../controllers/admin.controllers.js";
 import authenticate from "../middlewares/authenticate.middleware.js";
@@ -30,6 +31,9 @@ router.get("/users/:userId", getUserById);
 // add api
 router.post("/add-api", addApi)
 
+// get enquiry data
+
+router.get("/get-enquires", getEnquiryData)
 
 
 
