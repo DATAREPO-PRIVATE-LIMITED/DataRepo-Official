@@ -7,14 +7,15 @@ import { error } from './src/middlewares/error.middleware.js';
 
 const app = express()
 
+ 
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(cors({
-    // origin: 'https://apimarketplace-pi.vercel.app',
+    //  origin: 'https://apimarketplace-pi.vercel.app',
     origin: process.env.origin,
-    credentials: true
+     credentials: true
 }))
 
 

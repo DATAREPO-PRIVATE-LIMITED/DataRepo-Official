@@ -44,8 +44,7 @@ import {
   Upload,
 } from "lucide-react";
 
-import { getDashboardStats } from "../utils/adminApi";
-
+import { getDashboardStats, getEnquiryData } from "../utils/adminApi";
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -56,9 +55,23 @@ const AdminDashboard = () => {
   const [showUserModal, setShowUserModal] = useState(false);
 
   const [dashboardStats, setDashboardStats] = useState(null);
-  
 
- 
+  const [enquiryDataList, setEnquiryDataList] = useState([]);
+
+  useEffect(() => {
+    const fetchEnquiryList = async () => {
+      try {
+        let response = await getEnquiryData();
+        setEnquiryDataList(response.data || []);
+      } catch (error) {
+        console.error("Error fetching enquiry listy:", error);
+      }
+    };
+
+    fetchEnquiryList();
+  }, []);
+
+  console.log("enquiry list ", enquiryDataList);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -72,7 +85,6 @@ const AdminDashboard = () => {
 
     fetchDashboard();
   }, []);
-
 
   // Mock data for admin dashboard
   const mockStats = {
@@ -250,7 +262,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-background text-foreground mt-12 ">
       {/* Header */}
-      <div className="border-b bg-card  w-[80%] mx-auto rounded-xl">
+      {/* <div className="border-b bg-card  w-full sm:w-[90%] md:w-[85%] lg:w-[80%] mx-auto rounded-xl">
         <div className=" container  mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -267,19 +279,18 @@ const AdminDashboard = () => {
             <div className="flex items-center space-x-2"></div>
           </div>
         </div>
-      </div>
-
+      </div> */}
 
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-8 bg-muted/30 rounded-lg p-1">
+        <div className="flex space-x-1 mb-8 bg-muted/30 rounded-lg p-1 overflow-x-auto whitespace-nowrap scrollbar-thin -mx-2 px-2 sm:mx-0 sm:px-0 snap-x snap-mandatory">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-2 px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors flex-shrink-0 snap-start ${
                   activeTab === tab.id
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -384,17 +395,27 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle>Enquiry List</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="border rounded">
-                    <div className="flex justify-between mb-2 p-2">
-                      <h3>name</h3>
-                      <p>example@gmail.com</p>
-                      <p>45X-X55-87XX</p>
-                    </div>
-                    <div className="p-2 ">
-                      <p>Hi need help to intregate the finance api</p>
-                    </div>
-                  </div>
+                <CardContent className="space-y-3 h-90 overflow-scroll">
+                  {enquiryDataList &&
+                    enquiryDataList.map((val) => {
+                      return (
+                        <div className="border rounded mt-2  ">
+                          <div
+                            key={val._id}
+                            className="flex justify-between mb-3  px-3 py-2"
+                          >
+                            <h3 >
+                              {val.name}
+                            </h3>
+                            <p>{val.email}</p>
+                            <p>{val.mobile}</p>
+                          </div>
+                          <div className="p-3 mb-2">
+                            <p>{val.message}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </CardContent>
               </Card>
 
@@ -441,15 +462,15 @@ const AdminDashboard = () => {
         {/* Users Tab */}
         {activeTab === "users" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-between flex-col sm:flex-row gap-3">
+              <div className="flex items-center space-x-4 w-full sm:w-auto">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     placeholder="Search users..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-80"
+                    className="pl-10 w-full sm:w-80"
                   />
                 </div>
                 <Button variant="outline">
@@ -457,10 +478,7 @@ const AdminDashboard = () => {
                   Filter
                 </Button>
               </div>
-              <Button>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add User
-              </Button>
+              
             </div>
 
             <Card>
@@ -484,10 +502,10 @@ const AdminDashboard = () => {
                         <th className="text-left py-3 px-4 font-medium">
                           Billing
                         </th>
-                        <th className="text-left py-3 px-4 font-medium">
+                        <th className="text-left py-3 px-4 font-medium hidden md:table-cell">
                           Services
                         </th>
-                        <th className="text-left py-3 px-4 font-medium">
+                        <th className="text-left py-3 px-4 font-medium hidden md:table-cell">
                           Last Login
                         </th>
                         <th className="text-left py-3 px-4 font-medium">
@@ -523,7 +541,7 @@ const AdminDashboard = () => {
                           <td className="py-3 px-4">
                             <p className="font-medium">${user.billing}</p>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-4 hidden md:table-cell">
                             <div className="flex flex-wrap gap-1">
                               {user.services.map((service, index) => (
                                 <Badge
@@ -536,7 +554,7 @@ const AdminDashboard = () => {
                               ))}
                             </div>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-4 hidden md:table-cell">
                             <p className="text-sm text-muted-foreground">
                               {new Date(user.lastLogin).toLocaleDateString()}
                             </p>
@@ -670,7 +688,7 @@ const AdminDashboard = () => {
                         <th className="text-left py-3 px-4 font-medium">
                           Date
                         </th>
-                        <th className="text-left py-3 px-4 font-medium">
+                        <th className="text-left py-3 px-4 font-medium hidden md:table-cell">
                           Description
                         </th>
                         <th className="text-left py-3 px-4 font-medium">
@@ -706,7 +724,7 @@ const AdminDashboard = () => {
                               {new Date(billing.date).toLocaleDateString()}
                             </p>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-4 hidden md:table-cell">
                             <p className="text-sm">{billing.description}</p>
                           </td>
                           <td className="py-3 px-4">

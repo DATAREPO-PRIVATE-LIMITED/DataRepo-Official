@@ -3,6 +3,7 @@ import ErrorHandler from "../utils/ErrorHandler.js"
 import ApiResponse from "../utils/ApiResponse.js"
 import asyncHandler from "../utils/asyncHandler.js"
 import { Api } from "../models/api.models.js"
+import { Enquiry } from "../models/enquiry.models.js"
 
 const addApi = asyncHandler(async (req, res) => {
 
@@ -310,6 +311,22 @@ const getAnalyticsData = asyncHandler(async (req, res) => {
     );
 });
 
+//Get enquiry data 
+
+const getEnquiryData = asyncHandler(async (req, res) => {
+
+    let enquiresData = await Enquiry.find()
+
+    if (enquiresData.length <= 0) {
+        throw new ErrorHandler(" no enquiry present", 400)
+    }
+
+    res.status(200).json(
+        new ApiResponse(" enquiry data fetched succesfully ", enquiresData, 200)
+    )
+
+})
+
 
 export {
     getAllUsers,
@@ -318,6 +335,7 @@ export {
     getServicesStatus,
     getBillingData,
     getAnalyticsData,
-    addApi
+    addApi,
+    getEnquiryData
 
 };
