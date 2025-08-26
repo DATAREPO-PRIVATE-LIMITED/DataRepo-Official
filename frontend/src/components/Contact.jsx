@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { submitEnquiry } from "@/utils/userApi";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,9 +28,12 @@ const FormSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  contactNumber: z.string().optional(),
-
-  message: z.string().optional(),
+  contactNumber: z
+    .string()
+    .min(7, { message: "Please enter a valid contact number." }),
+  message: z
+    .string()
+    .min(1, { message: "Message is required." }),
 });
 
 const Contact = () => {
@@ -51,11 +55,23 @@ const Contact = () => {
     },
   });
 
-  function onSubmit(data) {
-    console.log("Form submitted:", data);
-    toast.success(
-      "Thank you! Your message has been sent successfully. We'll get back to you soon!"
-    );
+  async function onSubmit(data) {
+    try {
+      const payload = {
+        name: data.name,
+        email: data.email,
+        mobile: data.contactNumber,
+        message: data.message,
+      };
+      await submitEnquiry(payload);
+      toast.success(
+        "Thank you! Your message has been sent successfully. We'll get back to you soon!"
+      );
+      form.reset();
+    } catch (error) {
+      const apiMessage = error?.response?.data?.message || "Failed to send message";
+      toast.error(apiMessage);
+    }
   }
 
   return (
