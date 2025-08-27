@@ -108,6 +108,69 @@ const logout = asyncHandler(async (req, res) => {
 
 })
 
+// update profile 
+
+const updateProfileDetails = asyncHandler(async (req, res) => {
+
+    let { name, email, } = req.body
+
+    let { _id } = req.myUser;
+
+    const user = await User.findOneAndUpdate({
+        _id
+    },
+        {
+            $set: {
+                name: name,
+                email: email,
+            },
+
+        },
+        {
+            new: true
+        }
+    )
+
+    if (!user) {
+        throw new ApiResponse("unauthorized acces , login again", 400)
+
+    }
+
+    res.status(200).json(
+        new ApiResponse("user data updated successfully", user, 200)
+    )
+
+
+
+})
+
+// forget password
+const changePassword = asyncHandler(async (req, res) => {
+
+    let { _id } = req.myUser;
+
+    let { password, newPassword, confirmNewPassword } = req.body
+
+    const user = await User.findById(_id)
+
+    let validateCurrentPassword = await user.isPassCorrect(password)
+    if (!validateCurrentPassword) {
+        throw new ErrorHandler("invalid password", 404)
+    }
+
+    if (newPassword === confirmNewPassword) {
+        user.password = newPassword
+        await user.save({ validateBeforeSave: false })
+    } else {
+        throw new ErrorHandler("password mismatch", 404)
+    }
+
+res.status(200).json(
+    new ApiResponse("password updated successfully", user, 200)
+)
+
+})
+
 const refreshAccessToken = asyncHandler(async (req, res) => {
 
     let incomingRefrehToken = req.cookies?.refreshToken || req.body.refreshToken
@@ -160,10 +223,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     )
 })
 
-
-
 // enqires
-
 const addEquiry = asyncHandler(async (req, res) => {
 
     let { name, email, mobile, message } = req.body;
@@ -182,7 +242,6 @@ const addEquiry = asyncHandler(async (req, res) => {
 
 })
 
-
 const getAllApi = asyncHandler(async (req, res) => {
 
     let apis = await Api.find()
@@ -196,5 +255,6 @@ const getAllApi = asyncHandler(async (req, res) => {
     )
 })
 
-export { register, login, refreshAccessToken, logout, getCurrentUser, addEquiry, getAllApi }
+
+export { register, login, refreshAccessToken, logout, getCurrentUser, addEquiry, getAllApi, updateProfileDetails , changePassword}
 
