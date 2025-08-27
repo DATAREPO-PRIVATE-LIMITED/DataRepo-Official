@@ -38,3 +38,14 @@ export const submitEnquiry = async (payload) => {
   return resp.data;
 };
 
+export const changeUserPassword = async ({ password, newPassword, confirmNewPassword }) => {
+  const resp = await AxiosInstance.patch("/users/change-password", { password, newPassword, confirmNewPassword })
+  return resp.data
+}
+
+export const updateUserProfileData = async ({ name, email }) => {
+  const resp = await AxiosInstance.patch("/users/update-profile", { name, email })
+  return resp.data
+}
+
+

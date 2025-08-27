@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Separator } from './ui/separator';
-import { Input } from './ui/input';
-import { 
-  User, 
-  Settings, 
-  LogOut, 
-  Database, 
-  BarChart3, 
-  FileText, 
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Separator } from "./ui/separator";
+import { Input } from "./ui/input";
+import {
+  User,
+  Settings,
+  LogOut,
+  Database,
+  BarChart3,
+  FileText,
   Shield,
   Calendar,
   Mail,
@@ -29,45 +29,40 @@ import {
   Clock,
   AlertTriangle,
   X,
-  Save
-} from 'lucide-react';
-import { Label } from './ui/label';
-
+  Save,
+} from "lucide-react";
+import { Label } from "./ui/label";
+import { changeUserPassword, updateUserProfileData } from "../utils/userApi";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
 
-
-
-
-  
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  
+
   // Form states
   const [editForm, setEditForm] = useState({
-    fullName: '',
-    email: '',
-    phone: ''
+    name: "",
+    email: "",
   });
-  
+
   const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    password: "",
+    newPassword: "",
+    confirmNewPassword: "",
   });
-  
+
   // Loading states
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Redirect admin users to admin dashboard
   useEffect(() => {
-    if (user && user.role === 'admin') {
-      navigate('/admin');
+    if (user && user.role === "admin") {
+      navigate("/admin");
     }
   }, [user, navigate]);
 
@@ -75,15 +70,15 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       setEditForm({
-        fullName: user.fullName || '',
-        email: user.email || '',
-        phone: user.phone || ''
+        fullName: user.fullName || "",
+        email: user.email || "",
+        phone: user.phone || "",
       });
     }
   }, [user]);
 
   // Show loading while redirecting admin users
-  if (user && user.role === 'admin') {
+  if (user && user.role === "admin") {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center">
@@ -93,49 +88,85 @@ const Dashboard = () => {
       </div>
     );
   }
-  
+
   // Temporary mock user data for testing when not authenticated
   const mockUser = {
-    fullName: 'Test User',
-    email: 'test@example.com',
-    role: 'User',
-    createdAt: new Date().toISOString()
+    fullName: "Test User",
+    email: "test@example.com",
+    role: "User",
+    createdAt: new Date().toISOString(),
   };
 
   // Mock billing and API data
   const mockBillingData = {
-    currentPlan: 'Pay As You Use',
+    currentPlan: "Pay As You Use",
     monthlyUsage: 85,
     apiCalls: 5000,
-    storageUsed: '2.5 GB',
-    nextBilling: '2024-02-15',
-    balance: 50.00,
-    cardLast4: '4242',
-    cardBrand: 'Visa',
-    cardExpiry: '12/25',
+    storageUsed: "2.5 GB",
+    nextBilling: "2024-02-15",
+    balance: 50.0,
+    cardLast4: "4242",
+    cardBrand: "Visa",
+    cardExpiry: "12/25",
     ratePerRequest: 0.01,
-    currentMonthBill: 50.00,
+    currentMonthBill: 50.0,
     lastMonthBill: 45.75,
   };
 
   const mockApiKeys = [
-    { id: 1, name: 'Production API Key', key: 'sk_live_...abc123', status: 'active', lastUsed: '2 hours ago' },
-    { id: 2, name: 'Development API Key', key: 'sk_test_...def456', status: 'active', lastUsed: '1 day ago' },
-    { id: 3, name: 'Webhook Key', key: 'whk_...ghi789', status: 'inactive', lastUsed: '1 week ago' }
+    {
+      id: 1,
+      name: "Production API Key",
+      key: "sk_live_...abc123",
+      status: "active",
+      lastUsed: "2 hours ago",
+    },
+    {
+      id: 2,
+      name: "Development API Key",
+      key: "sk_test_...def456",
+      status: "active",
+      lastUsed: "1 day ago",
+    },
+    {
+      id: 3,
+      name: "Webhook Key",
+      key: "whk_...ghi789",
+      status: "inactive",
+      lastUsed: "1 week ago",
+    },
   ];
 
   const mockInvoices = [
-    { id: 'INV-001', date: '2024-01-15', amount: 50.00, status: 'paid', description: 'Pay As You Use - January 2024 (5,000 API calls)' },
-    { id: 'INV-002', date: '2023-12-15', amount: 45.75, status: 'paid', description: 'Pay As You Use - December 2023 (4,575 API calls)' },
-    { id: 'INV-003', date: '2023-11-15', amount: 38.90, status: 'paid', description: 'Pay As You Use - November 2023 (3,890 API calls)' }
+    {
+      id: "INV-001",
+      date: "2024-01-15",
+      amount: 50.0,
+      status: "paid",
+      description: "Pay As You Use - January 2024 (5,000 API calls)",
+    },
+    {
+      id: "INV-002",
+      date: "2023-12-15",
+      amount: 45.75,
+      status: "paid",
+      description: "Pay As You Use - December 2023 (4,575 API calls)",
+    },
+    {
+      id: "INV-003",
+      date: "2023-11-15",
+      amount: 38.9,
+      status: "paid",
+      description: "Pay As You Use - November 2023 (3,890 API calls)",
+    },
   ];
-  
+
   const currentUser = user || mockUser;
 
   const handleLogout = async () => {
     const result = await logout();
     if (result.success) {
-      navigate('/');
+      navigate("/");
     }
   };
 
@@ -143,23 +174,17 @@ const Dashboard = () => {
   const handleEditProfile = async (e) => {
     e.preventDefault();
     setIsUpdating(true);
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update local user state (in real app, this would update the backend)
-      if (user) {
-        // Update the user context with new data
-        // This would typically be done through an API call
-        console.log('Profile updated:', editForm);
-      }
-      
+      const resp = await updateUserProfileData({...editForm });
+
       setShowEditProfile(false);
-      // Show success message (you can add a toast notification here)
+      setEditForm({
+        name: resp.name,
+        email: resp.email,
+      });
     } catch (error) {
-      console.error('Error updating profile:', error);
-      // Show error message
+      console.error("Error updating profile:", error);
     } finally {
       setIsUpdating(false);
     }
@@ -168,82 +193,68 @@ const Dashboard = () => {
   // Handle change password form submission
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert('New passwords do not match');
-      return;
-    }
-    
-    if (passwordForm.newPassword.length < 6) {
-      alert('New password must be at least 6 characters long');
-      return;
-    }
-    
     setIsChangingPassword(true);
-    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // In real app, this would call the backend to change password
-      console.log('Password changed successfully');
-      
+      let resp = await changeUserPassword({ ...passwordForm });
+
       setShowChangePassword(false);
       setPasswordForm({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+        password: resp.password,
+        newPassword: resp.newPassword,
+        confirmNewPassword: resp.confirmNewPassword,
       });
-      
-      // Show success message
+      console.log("Password changed successfully");
     } catch (error) {
-      console.error('Error changing password:', error);
+      console.error("Error changing password:", error);
       // Show error message
     } finally {
       setIsChangingPassword(false);
     }
   };
 
-
-
   // Reset forms when modals are closed
   const handleCloseEditProfile = () => {
     setShowEditProfile(false);
-    if (user) {
+    
       setEditForm({
-        fullName: user.fullName || '',
-        email: user.email || '',
-        phone: user.phone || ''
+        name: "",
+        email:  "",
+        
       });
-    }
+    
   };
 
   const handleCloseChangePassword = () => {
     setShowChangePassword(false);
     setPasswordForm({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
+      password: "",
+      newPassword: "",
+      confirmNewPassword: "",
     });
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'default';
-      case 'inactive': return 'secondary';
-      case 'paid': return 'default';
-      case 'pending': return 'secondary';
-      default: return 'secondary';
+      case "active":
+        return "default";
+      case "inactive":
+        return "secondary";
+      case "paid":
+        return "default";
+      case "pending":
+        return "secondary";
+      default:
+        return "secondary";
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'active':
-      case 'paid':
+      case "active":
+      case "paid":
         return <CheckCircle className="w-4 h-4" />;
-      case 'inactive':
-      case 'pending':
+      case "inactive":
+      case "pending":
         return <Clock className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
@@ -252,15 +263,15 @@ const Dashboard = () => {
 
   // Quick Actions handlers
   const handleGoToApiKeys = () => {
-    setActiveTab('apikeys');
+    setActiveTab("apikeys");
   };
 
   const handleGoToBilling = () => {
-    setActiveTab('billing');
+    setActiveTab("billing");
   };
 
   const handleGoToAnalytics = () => {
-    setActiveTab('analytics');
+    setActiveTab("analytics");
   };
 
   // const handleDownloadInvoices = () => {
@@ -299,11 +310,11 @@ const Dashboard = () => {
   // };
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'billing', label: 'Billing', icon: DollarSign },
-    { id: 'apikeys', label: 'API Keys', icon: Key },
-    { id: 'analytics', label: 'Analytics', icon: TrendingUp }
+    { id: "overview", label: "Overview", icon: BarChart3 },
+    { id: "profile", label: "Profile", icon: User },
+    { id: "billing", label: "Billing", icon: DollarSign },
+    { id: "apikeys", label: "API Keys", icon: Key },
+    { id: "analytics", label: "Analytics", icon: TrendingUp },
   ];
 
   return (
@@ -342,8 +353,8 @@ const Dashboard = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center space-x-2 px-2 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors flex-shrink-0 snap-start ${
                   activeTab === tab.id
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -354,7 +365,7 @@ const Dashboard = () => {
         </div>
 
         {/* Overview Tab */}
-        {activeTab === 'overview' && (
+        {activeTab === "overview" && (
           <div className="space-y-8">
             {/* Welcome Banner */}
             {/* <div className="p-6 sm:p-8 bg-card via-primary/5 to-primary/10 rounded-xl border border-primary/20 shadow-sm">
@@ -386,7 +397,9 @@ const Dashboard = () => {
                       <Database className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Total APIs</p>
+                      <p className="text-sm text-muted-foreground">
+                        Total APIs
+                      </p>
                       <p className="text-2xl font-bold">3</p>
                     </div>
                   </div>
@@ -401,7 +414,9 @@ const Dashboard = () => {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">API Calls</p>
-                      <p className="text-2xl font-bold">{mockBillingData.apiCalls.toLocaleString()}</p>
+                      <p className="text-2xl font-bold">
+                        {mockBillingData.apiCalls.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -414,8 +429,12 @@ const Dashboard = () => {
                       <DollarSign className="w-5 h-5 text-purple-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Current Bill</p>
-                      <p className="text-2xl font-bold">${mockBillingData.currentMonthBill}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Current Bill
+                      </p>
+                      <p className="text-2xl font-bold">
+                        ${mockBillingData.currentMonthBill}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -428,8 +447,12 @@ const Dashboard = () => {
                       <TrendingUp className="w-5 h-5 text-orange-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Rate/Request</p>
-                      <p className="text-2xl font-bold">${mockBillingData.ratePerRequest}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Rate/Request
+                      </p>
+                      <p className="text-2xl font-bold">
+                        ${mockBillingData.ratePerRequest}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -443,20 +466,30 @@ const Dashboard = () => {
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full justify-start" onClick={handleGoToApiKeys}>
+                  <Button
+                    className="w-full justify-start"
+                    onClick={handleGoToApiKeys}
+                  >
                     <Key className="w-4 h-4 mr-2" />
                     Generate New API Key
-                    
                   </Button>
-                  <Button variant="outline" className="w-full justify-start" onClick={handleGoToBilling}>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={handleGoToBilling}
+                  >
                     <CreditCard className="w-4 h-4 mr-2" />
                     Update Payment Method
                   </Button>
-                  <Button variant="outline" className="w-full justify-start" onClick={handleGoToAnalytics}>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={handleGoToAnalytics}
+                  >
                     <BarChart3 className="w-4 h-4 mr-2" />
                     View Usage Analytics
                   </Button>
-                  <Button variant="outline" className="w-full justify-start" >
+                  <Button variant="outline" className="w-full justify-start">
                     <Receipt className="w-4 h-4 mr-2" />
                     Download Invoices
                   </Button>
@@ -478,15 +511,27 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Billing Plan</span>
-                      <span className="text-sm">{mockBillingData.currentPlan}</span>
+                      <span className="text-sm">
+                        {mockBillingData.currentPlan}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Next Billing</span>
-                      <span className="text-sm">{new Date(mockBillingData.nextBilling).toLocaleDateString()}</span>
+                      <span className="text-sm">
+                        {new Date(
+                          mockBillingData.nextBilling
+                        ).toLocaleDateString()}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">API Keys</span>
-                      <span className="text-sm">{mockApiKeys.filter(k => k.status === 'active').length} active</span>
+                      <span className="text-sm">
+                        {
+                          mockApiKeys.filter((k) => k.status === "active")
+                            .length
+                        }{" "}
+                        active
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -496,8 +541,8 @@ const Dashboard = () => {
         )}
 
         {/* Profile Tab */}
-        {activeTab === 'profile' && (
-          <div className="space-y-6">
+        {activeTab === "profile" && (
+          <div className="space-y-6 ">
             <Card>
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
@@ -511,11 +556,9 @@ const Dashboard = () => {
                         <User className="w-16 h-16 text-primary-foreground" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-xl">{currentUser.fullName || 'User'}</h3>
-                        <p className="text-muted-foreground">{currentUser.email}</p>
-                        <Badge variant="secondary" className="mt-2">
-                          {currentUser.role || 'User'}
-                        </Badge>
+                        <h3 className="font-bold text-xl">
+                          {user.name || "User"}
+                        </h3>
                       </div>
                     </div>
                   </div>
@@ -523,30 +566,38 @@ const Dashboard = () => {
                   {/* Profile Details */}
                   <div className="lg:col-span-2 space-y-6">
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-lg">Personal Information</h4>
+                      <h4 className="font-semibold text-lg">
+                        Personal Information
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium">Full Name</Label>
+                          <Label className="text-sm font-medium">
+                            Full Name
+                          </Label>
                           <div className="p-3 bg-muted/30 rounded-lg">
-                            {currentUser.fullName || 'Not provided'}
+                            {user.name || "Not provided"}
                           </div>
                         </div>
                         <div className="space-y-2">
                           <Label className="text-sm font-medium">Email</Label>
                           <div className="p-3 bg-muted/30 rounded-lg">
-                            {currentUser.email}
+                            {user.email}
                           </div>
                         </div>
                         <div className="space-y-2">
                           <Label className="text-sm font-medium">Role</Label>
                           <div className="p-3 bg-muted/30 rounded-lg">
-                            {currentUser.role || 'User'}
+                            {currentUser.role || "User"}
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium">Member Since</Label>
+                          <Label className="text-sm font-medium">
+                            Member Since
+                          </Label>
                           <div className="p-3 bg-muted/30 rounded-lg">
-                            {new Date(currentUser.createdAt || Date.now()).toLocaleDateString()}
+                            {new Date(
+                              user.createdAt || Date.now()
+                            ).toLocaleDateString()}
                           </div>
                         </div>
                       </div>
@@ -555,13 +606,18 @@ const Dashboard = () => {
                     <Separator />
 
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-lg">Account Settings</h4>
+                      <h4 className="font-semibold text-lg">
+                        Account Settings
+                      </h4>
                       <div className="flex space-x-3">
                         <Button onClick={() => setShowEditProfile(true)}>
                           <Settings className="w-4 h-4 mr-2" />
                           Edit Profile
                         </Button>
-                        <Button variant="outline" onClick={() => setShowChangePassword(true)}>
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowChangePassword(true)}
+                        >
                           <Shield className="w-4 h-4 mr-2" />
                           Change Password
                         </Button>
@@ -575,7 +631,7 @@ const Dashboard = () => {
         )}
 
         {/* Billing Tab */}
-        {activeTab === 'billing' && (
+        {activeTab === "billing" && (
           <div className="space-y-6">
             {/* Pricing Information */}
             <Card>
@@ -590,12 +646,15 @@ const Dashboard = () => {
                   <div className="p-4 bg-card rounded-lg border">
                     <h3 className="font-semibold mb-2">Pay As You Use</h3>
                     <p className="text-sm mb-3">
-                      Only pay for what you use. No monthly fees, no hidden costs.
+                      Only pay for what you use. No monthly fees, no hidden
+                      costs.
                     </p>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Rate per API request:</span>
-                        <span className="font-medium">${mockBillingData.ratePerRequest}</span>
+                        <span className="font-medium">
+                          ${mockBillingData.ratePerRequest}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Billing cycle:</span>
@@ -603,7 +662,9 @@ const Dashboard = () => {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Example:</span>
-                        <span className="font-medium">5,000 requests = ${mockBillingData.currentMonthBill}</span>
+                        <span className="font-medium">
+                          5,000 requests = ${mockBillingData.currentMonthBill}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -630,8 +691,13 @@ const Dashboard = () => {
                           <CreditCard className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                          <p className="font-medium">{mockBillingData.cardBrand} •••• {mockBillingData.cardLast4}</p>
-                          <p className="text-sm text-muted-foreground">Expires {mockBillingData.cardExpiry}</p>
+                          <p className="font-medium">
+                            {mockBillingData.cardBrand} ••••{" "}
+                            {mockBillingData.cardLast4}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Expires {mockBillingData.cardExpiry}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -646,24 +712,46 @@ const Dashboard = () => {
                     <h3 className="font-semibold text-lg">Billing Summary</h3>
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Pricing Model:</span>
-                        <span className="font-medium">{mockBillingData.currentPlan}</span>
+                        <span className="text-muted-foreground">
+                          Pricing Model:
+                        </span>
+                        <span className="font-medium">
+                          {mockBillingData.currentPlan}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Rate per Request:</span>
-                        <span className="font-medium">${mockBillingData.ratePerRequest}</span>
+                        <span className="text-muted-foreground">
+                          Rate per Request:
+                        </span>
+                        <span className="font-medium">
+                          ${mockBillingData.ratePerRequest}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Current Month Bill:</span>
-                        <span className="font-extrabold">${mockBillingData.currentMonthBill}</span>
+                        <span className="text-muted-foreground">
+                          Current Month Bill:
+                        </span>
+                        <span className="font-extrabold">
+                          ${mockBillingData.currentMonthBill}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Last Month Bill:</span>
-                        <span className="font-medium">${mockBillingData.lastMonthBill}</span>
+                        <span className="text-muted-foreground">
+                          Last Month Bill:
+                        </span>
+                        <span className="font-medium">
+                          ${mockBillingData.lastMonthBill}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Next Billing:</span>
-                        <span className="font-medium">{new Date(mockBillingData.nextBilling).toLocaleDateString()}</span>
+                        <span className="text-muted-foreground">
+                          Next Billing:
+                        </span>
+                        <span className="font-medium">
+                          {new Date(
+                            mockBillingData.nextBilling
+                          ).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -682,16 +770,21 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-sm text-muted-foreground">Your recent billing history</p>
+                    <p className="text-sm text-muted-foreground">
+                      Your recent billing history
+                    </p>
                     <Button variant="outline" size="sm">
                       <Receipt className="w-4 h-4 mr-2" />
                       View All Invoices
                     </Button>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {mockInvoices.map((invoice) => (
-                      <div key={invoice.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={invoice.id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
                             <h4 className="font-medium">{invoice.id}</h4>
@@ -700,7 +793,9 @@ const Dashboard = () => {
                               <span className="ml-1">{invoice.status}</span>
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">{invoice.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {invoice.description}
+                          </p>
                           <p className="text-xs text-muted-foreground">
                             {new Date(invoice.date).toLocaleDateString()}
                           </p>
@@ -721,7 +816,7 @@ const Dashboard = () => {
         )}
 
         {/* API Keys Tab */}
-        {activeTab === 'apikeys' && (
+        {activeTab === "apikeys" && (
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -733,13 +828,15 @@ const Dashboard = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-sm text-muted-foreground">Manage your API keys for accessing data services</p>
+                    <p className="text-sm text-muted-foreground">
+                      Manage your API keys for accessing data services
+                    </p>
                     <Button size="sm">
                       <Key className="w-4 h-4 mr-2" />
                       Generate New Key
                     </Button>
                   </div>
-                  
+
                   <div className="space-y-3">
                     {mockApiKeys.map((apiKey) => (
                       <div key={apiKey.id} className="p-4 border rounded-lg">
@@ -778,7 +875,7 @@ const Dashboard = () => {
         )}
 
         {/* Analytics Tab */}
-        {activeTab === 'analytics' && (
+        {activeTab === "analytics" && (
           <div className="space-y-6">
             {/* Usage Analytics */}
             <Card>
@@ -795,9 +892,15 @@ const Dashboard = () => {
                     <h4 className="font-medium">API Calls (This Month)</h4>
                     <div className="h-32 bg-muted/30 rounded-lg flex items-center justify-center">
                       <div className="text-center">
-                        <p className="text-2xl font-bold text-primary">{mockBillingData.apiCalls.toLocaleString()}</p>
-                        <p className="text-sm text-muted-foreground">Total calls</p>
-                        <p className="text-xs text-muted-foreground">${mockBillingData.ratePerRequest} per request</p>
+                        <p className="text-2xl font-bold text-primary">
+                          {mockBillingData.apiCalls.toLocaleString()}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Total calls
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          ${mockBillingData.ratePerRequest} per request
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -807,9 +910,16 @@ const Dashboard = () => {
                     <h4 className="font-medium">Cost Calculation</h4>
                     <div className="h-32 bg-muted/30 rounded-lg flex items-center justify-center">
                       <div className="text-center">
-                        <p className="text-2xl font-bold">${mockBillingData.currentMonthBill}</p>
-                        <p className="text-sm text-muted-foreground">This month's bill</p>
-                        <p className="text-xs text-muted-foreground">{mockBillingData.apiCalls.toLocaleString()} × ${mockBillingData.ratePerRequest}</p>
+                        <p className="text-2xl font-bold">
+                          ${mockBillingData.currentMonthBill}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          This month's bill
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {mockBillingData.apiCalls.toLocaleString()} × $
+                          {mockBillingData.ratePerRequest}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -848,7 +958,9 @@ const Dashboard = () => {
                       <TrendingUp className="w-8 h-8 text-blue-600" />
                     </div>
                     <p className="font-bold text-lg">245ms</p>
-                    <p className="text-sm text-muted-foreground">Avg Response Time</p>
+                    <p className="text-sm text-muted-foreground">
+                      Avg Response Time
+                    </p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -861,8 +973,12 @@ const Dashboard = () => {
                     <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
                       <DollarSign className="w-8 h-8 text-orange-600" />
                     </div>
-                    <p className="font-bold text-lg">${mockBillingData.ratePerRequest}</p>
-                    <p className="text-sm text-muted-foreground">Per Request Cost</p>
+                    <p className="font-bold text-lg">
+                      ${mockBillingData.ratePerRequest}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Per Request Cost
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -886,42 +1002,35 @@ const Dashboard = () => {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            
+
             <form onSubmit={handleEditProfile} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
                   id="fullName"
-                  value={editForm.fullName}
-                  onChange={(e) => setEditForm({...editForm, fullName: e.target.value})}
+                  value={editForm.name}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, name: e.target.value })
+                  }
                   placeholder="Enter your full name"
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
                   value={editForm.email}
-                  onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, email: e.target.value })
+                  }
                   placeholder="Enter your email"
                   required
                 />
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone (Optional)</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={editForm.phone}
-                  onChange={(e) => setEditForm({...editForm, phone: e.target.value})}
-                  placeholder="Enter your phone number"
-                />
-              </div>
-              
+
               <div className="flex space-x-3 pt-4">
                 <Button
                   type="button"
@@ -931,11 +1040,7 @@ const Dashboard = () => {
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isUpdating}
-                  className="flex-1"
-                >
+                <Button type="submit" disabled={isUpdating} className="flex-1">
                   {isUpdating ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -969,44 +1074,59 @@ const Dashboard = () => {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            
+
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Current Password</Label>
                 <Input
                   id="currentPassword"
                   type="password"
-                  value={passwordForm.currentPassword}
-                  onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
+                  value={passwordForm.password}
+                  onChange={(e) =>
+                    setPasswordForm({
+                      ...passwordForm,
+                      password: e.target.value,
+                    })
+                  }
                   placeholder="Enter current password"
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
                 <Input
                   id="newPassword"
                   type="password"
                   value={passwordForm.newPassword}
-                  onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                  onChange={(e) =>
+                    setPasswordForm({
+                      ...passwordForm,
+                      newPassword: e.target.value,
+                    })
+                  }
                   placeholder="Enter new password"
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  value={passwordForm.confirmPassword}
-                  onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                  value={passwordForm.confirmNewPassword}
+                  onChange={(e) =>
+                    setPasswordForm({
+                      ...passwordForm,
+                      confirmNewPassword: e.target.value,
+                    })
+                  }
                   placeholder="Confirm new password"
                   required
                 />
               </div>
-              
+
               <div className="flex space-x-3 pt-4">
                 <Button
                   type="button"
