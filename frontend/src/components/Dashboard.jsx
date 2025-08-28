@@ -42,6 +42,7 @@ const Dashboard = () => {
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showUpdateCard, setShowUpdateCard] = useState(false)
 
   // Form states
   const [editForm, setEditForm] = useState({
@@ -58,6 +59,7 @@ const Dashboard = () => {
   // Loading states
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isCardUpdating, setIsCardUpdating] = useState(false)
 
   // Redirect admin users to admin dashboard
   useEffect(() => {
@@ -223,6 +225,10 @@ const Dashboard = () => {
       });
     
   };
+
+  const handleCloseUpdateCard = () => {
+    setShowUpdateCard(false)
+  }
 
   const handleCloseChangePassword = () => {
     setShowChangePassword(false);
@@ -701,8 +707,8 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <CreditCard className="w-4 h-4 mr-2" />
+                    <Button onClick={ () => setShowUpdateCard(true)} variant="outline" size="sm">
+                      <CreditCard className="w-4 h-4 mr-2 " />
                       Update Payment Method
                     </Button>
                   </div>
@@ -986,6 +992,71 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* update card deatils or add card deatils */}
+       {showUpdateCard && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">Card Details</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCloseUpdateCard}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <form onSubmit={handleEditProfile} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="cardNumber">Card Information</Label>
+                <Input
+                
+                  id="cardNumber"
+                  value={editForm.name}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, name: e.target.value })
+                  }
+                  placeholder="Enter Card Number "
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                
+                <h2>Avaiable Soon</h2>
+              
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCloseEditProfile}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isUpdating} className="flex-1">
+                  {isUpdating ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Edit Profile Modal */}
       {showEditProfile && (

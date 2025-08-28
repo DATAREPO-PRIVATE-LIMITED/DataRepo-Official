@@ -27,7 +27,7 @@ const Navbar = () => {
 
   return (
     <nav className="w-full flex justify-center mt-5 px-3 sm:px-4 sticky top-0 z-50">
-      <div className="w-full sm:w-[92%] md:w-[100%] lg:w-[75%] xl:w-[65%] max-w-6xl bg-card/80 backdrop-blur-md flex items-center justify-between py-2 pl-5 sm:pl-7 pr-3 rounded-full shadow-lg border border-border relative">
+      <div className="w-full sm:w-[92%] md:w-[100%] lg:w-[95%] xl:w-[90%] max-w-5xl bg-card/80 backdrop-blur-md flex items-center justify-between py-2 pl-5 sm:pl-7 pr-3 rounded-full shadow-lg border border-border relative">
         {/* Logo */}
         <motion.div
           className="flex-shrink-0 "
@@ -81,7 +81,7 @@ const Navbar = () => {
                   <span className="truncate">{user?.fullName || user?.email}</span>
                 </div>
               )}
-              {/* <motion.button
+              <motion.button
                 whileHover={{ scale: 1.05 }}
                 onClick={async () => {
                   const result = await logout();
@@ -93,7 +93,7 @@ const Navbar = () => {
               >
                 Logout
                 <FiLogOut className="ml-1" />
-              </motion.button> */}
+              </motion.button>
             </div>
           )}
           <motion.div
