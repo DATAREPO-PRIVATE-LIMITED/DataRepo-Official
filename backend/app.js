@@ -23,9 +23,12 @@ app.use(cors({
 
 import userRouter from './src/routes/user.routes.js';
 import adminRouter from './src/routes/admin.routes.js';
+import apiKeyRouter from "./src/routes/apiKey.routes.js"
 
 app.use("/api/users", userRouter)
 app.use("/api/admin", adminRouter)
+app.use("/api/keys", apiKeyRouter)
+
 
 
 

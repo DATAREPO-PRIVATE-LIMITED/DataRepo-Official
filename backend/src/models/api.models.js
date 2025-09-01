@@ -51,8 +51,8 @@ default:"Pay Per Use"
     docsUrl:{
         type:String,
         require:true
-    }
-    
+    }, 
+ 
 
 }, { timestamps: true })
 

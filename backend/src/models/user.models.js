@@ -33,12 +33,11 @@ const userSchema = new mongoose.Schema({
         type: String
     },
 
-    services: {}
-}, { timestamps: true })
-
-
-
-
+    services: {
+        type: [Object],
+        default: []
+    }
+}, { timestamps: true , minimize:false})
 
 userSchema.pre('save', async function (next) {
     if (!this.isModified("password")) return next()
