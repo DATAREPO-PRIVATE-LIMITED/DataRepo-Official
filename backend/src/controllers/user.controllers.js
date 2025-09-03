@@ -254,7 +254,21 @@ const getAllApi = asyncHandler(async (req, res) => {
         new ApiResponse("apis list fetched succesfully", apis, 200)
     )
 })
+const getSingleApi = asyncHandler(async (req, res) => {
+
+let { apiID } = req.params.id
+
+    let singleApi = await Api.findOne(apiID)
+
+    if (!singleApi) {
+        throw new ErrorHandler("unable to fetch api", 404)
+    }
+
+    res.status(200).json(
+        new ApiResponse("api fetched succesfully", singleApi, 200)
+    )
+})
 
 
-export { register, login, refreshAccessToken, logout, getCurrentUser, addEquiry, getAllApi, updateProfileDetails , changePassword}
+export { register, login, refreshAccessToken, logout, getCurrentUser, addEquiry, getAllApi, updateProfileDetails , changePassword, getSingleApi}
 
