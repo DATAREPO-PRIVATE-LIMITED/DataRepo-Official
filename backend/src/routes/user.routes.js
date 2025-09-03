@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import authenticate from "../middlewares/authenticate.middleware.js"
-import { login, logout, refreshAccessToken, register, getCurrentUser, addEquiry, getAllApi, updateProfileDetails, changePassword } from '../controllers/user.controllers.js'
-import { get } from 'mongoose'
+import { login, logout, refreshAccessToken, register, getCurrentUser, addEquiry, getAllApi, updateProfileDetails, changePassword, getSingleApi } from '../controllers/user.controllers.js'
+
 
 const router = Router()
 
@@ -10,15 +10,13 @@ router.post("/login", login)
 router.post("/refresh-token", refreshAccessToken)
 router.post("/contact", addEquiry)
 router.get("/getAllApi", getAllApi)
+router.get("/get-single-api/:id", getSingleApi)
 
 
 router.get("/me", authenticate, getCurrentUser)
 router.post("/logout", authenticate, logout)
 router.patch("/update-profile", authenticate, updateProfileDetails)
 router.patch("/change-password", authenticate, changePassword)
-
-
-
 
 
 

@@ -31,6 +31,11 @@ export const getAllApi = async () => {
   // ApiResponse shape: { message, data, statusCode }
   return resp.data?.data;
 }
+export const getSingleApi = async (id) => {
+  const resp = await AxiosInstance.get(`/users/get-single-api/${id}`);
+  // ApiResponse shape: { message, data, statusCode }
+  return resp.data?.data;
+}
 
 // Contact/Enquiry
 export const submitEnquiry = async (payload) => {
