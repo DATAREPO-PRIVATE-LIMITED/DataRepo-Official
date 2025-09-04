@@ -54,3 +54,17 @@ export const updateUserProfileData = async ({ name, email }) => {
 }
 
 
+// generate api Key
+export const generateApiKey = async(apiId) => {
+  const resp = await AxiosInstance.post(`/keys/generate-api-keys/${apiId}`)
+  return resp.data.data.apiKey
+}
+
+// fetch apiKey
+
+export const fetchApiKey = async() => {
+  const resp = await AxiosInstance.get("/keys/get-api-key")
+   return resp.data?.data
+}
+
+
