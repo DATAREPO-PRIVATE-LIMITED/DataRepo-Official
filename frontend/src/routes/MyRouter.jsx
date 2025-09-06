@@ -82,7 +82,7 @@ export const myRoutes = createBrowserRouter([
         element: <AdminProtectedRoute><PublishApi /></AdminProtectedRoute>,
       },
       {
-        path: "/store",
+        path: "/store/:apiId",
         element: <Store />,
       },
     ],

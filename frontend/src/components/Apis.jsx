@@ -13,8 +13,9 @@ const Apis = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const handleStoreRedirect = () => {
-    navigate("/store");
+  const handleStoreRedirect = (apiId) => {
+    navigate(`/store/${apiId}`);
+   
   };
 
   const handleDocumentation = (url) => {
@@ -167,12 +168,12 @@ const Apis = () => {
                     Documentation
                   </Button>
                   <Button
-                    onClick={handleStoreRedirect}
+                    onClick={ () => handleStoreRedirect(api._id)}
                     className="w-full"
                     size="sm"
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    Try Now
+                    Get API Key
                   </Button>
                 </div>
               </CardContent>

@@ -29,10 +29,17 @@ import {
   Clock,
   AlertTriangle,
   X,
+  Copy,
+  EyeOff,
   Save,
+  Bold,
 } from "lucide-react";
 import { Label } from "./ui/label";
-import { changeUserPassword, updateUserProfileData } from "../utils/userApi";
+import {
+  changeUserPassword,
+  fetchAllServices,
+  updateUserProfileData,
+} from "../utils/userApi";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -42,7 +49,7 @@ const Dashboard = () => {
   // Modal states
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [showUpdateCard, setShowUpdateCard] = useState(false)
+  const [showUpdateCard, setShowUpdateCard] = useState(false);
 
   // Form states
   const [editForm, setEditForm] = useState({
@@ -59,7 +66,25 @@ const Dashboard = () => {
   // Loading states
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [isCardUpdating, setIsCardUpdating] = useState(false)
+  const [isCardUpdating, setIsCardUpdating] = useState(false);
+  const [services, setServices] = useState([]);
+  const [viewApiKey, setViewApiKey] = useState({});
+  const [copiedApiKeyId, setCopiedApiKeyId] = useState(null);
+
+  // fetch all services of user
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        let resp = await fetchAllServices();
+        if (resp.success) {
+          setServices(resp.data); // <-- set services to the array itself
+        }
+      } catch (error) {
+        console.log("unable to fetch the api services", error);
+      }
+    };
+    fetchServices();
+  }, []); // run only once on mount
 
   // Redirect admin users to admin dashboard
   useEffect(() => {
@@ -91,12 +116,50 @@ const Dashboard = () => {
     );
   }
 
+  //hande generate new Api key
+  const handleGenerateNewApiKey = () => {
+    navigate("/market");
+  };
+
   // Temporary mock user data for testing when not authenticated
   const mockUser = {
     fullName: "Test User",
     email: "test@example.com",
     role: "User",
     createdAt: new Date().toISOString(),
+  };
+
+  // handle copy api key
+  const handleCopyApiKey = async (apiKey, apiId) => {
+    if (!apiId) return;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(apiKey);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = apiKey;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+
+      setCopiedApiKeyId(apiId);
+      setTimeout(() => setCopiedApiKeyId(null), 2000);
+    } catch (error) {
+      console.log("unable copy apiKey , try again !", error);
+    }
+  };
+
+  // handle toggle api key visibility for individual API key
+  const handleToggleApiKeyVisibility = (apiId) => {
+    setViewApiKey(prev => ({
+      ...prev,
+      [apiId]: !prev[apiId]
+    }));
   };
 
   // Mock billing and API data
@@ -178,7 +241,7 @@ const Dashboard = () => {
     setIsUpdating(true);
 
     try {
-      const resp = await updateUserProfileData({...editForm });
+      const resp = await updateUserProfileData({ ...editForm });
 
       setShowEditProfile(false);
       setEditForm({
@@ -217,18 +280,16 @@ const Dashboard = () => {
   // Reset forms when modals are closed
   const handleCloseEditProfile = () => {
     setShowEditProfile(false);
-    
-      setEditForm({
-        name: "",
-        email:  "",
-        
-      });
-    
+
+    setEditForm({
+      name: "",
+      email: "",
+    });
   };
 
   const handleCloseUpdateCard = () => {
-    setShowUpdateCard(false)
-  }
+    setShowUpdateCard(false);
+  };
 
   const handleCloseChangePassword = () => {
     setShowChangePassword(false);
@@ -477,7 +538,7 @@ const Dashboard = () => {
                     onClick={handleGoToApiKeys}
                   >
                     <Key className="w-4 h-4 mr-2" />
-                    Generate New API Key
+                    Manage API Key
                   </Button>
                   <Button
                     variant="outline"
@@ -707,7 +768,11 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </div>
-                    <Button onClick={ () => setShowUpdateCard(true)} variant="outline" size="sm">
+                    <Button
+                      onClick={() => setShowUpdateCard(true)}
+                      variant="outline"
+                      size="sm"
+                    >
                       <CreditCard className="w-4 h-4 mr-2 " />
                       Update Payment Method
                     </Button>
@@ -837,37 +902,72 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">
                       Manage your API keys for accessing data services
                     </p>
-                    <Button size="sm">
+                    <Button onClick={() => handleGenerateNewApiKey()} size="sm">
                       <Key className="w-4 h-4 mr-2" />
                       Generate New Key
                     </Button>
                   </div>
 
                   <div className="space-y-3">
-                    {mockApiKeys.map((apiKey) => (
-                      <div key={apiKey.id} className="p-4 border rounded-lg">
+                    {services.map((apiKey) => (
+                      <div key={apiKey._id} className="p-4 border rounded-lg">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
-                              <h4 className="font-medium">{apiKey.name}</h4>
-                              <Badge variant={getStatusColor(apiKey.status)}>
+                              <h4 className="font-medium">{apiKey.apiName}</h4>
+                              <Badge variant={getStatusColor(apiKey)}>
                                 {getStatusIcon(apiKey.status)}
                                 <span className="ml-1">{apiKey.status}</span>
                               </Badge>
                             </div>
+                            {/* view api key and copy  */}
+                            {viewApiKey[apiKey._id] ? (
+                              <span className="font-mono text-center  mt-5 p-2 break-all flex-1">
+                                {apiKey.apiKey}
+                              </span>
+                            ) : (
+                              <span className="font-mono text-center  mt-1 break-all flex-1">
+                                See your Api Key.........
+                              </span>
+                            )}
+
                             <p className="text-sm text-muted-foreground mt-1 font-mono">
-                              {apiKey.key}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Last used: {apiKey.lastUsed}
+                              <b>Req Count</b> : {apiKey.usageCount}
                             </p>
                           </div>
+
                           <div className="flex items-center space-x-2">
-                            <Button variant="outline" size="sm">
-                              <Eye className="w-4 h-4" />
+                            
+                            <Button
+                              onClick={() => handleCopyApiKey(apiKey?.apiKey, apiKey?._id)}
+                              variant="ghost"
+                              size="sm"
+                              className={`h-6 px-2 py-0 hover:bg-muted ${
+                                copiedApiKeyId === apiKey?._id
+                                  ? "text-green-600"
+                                  : ""
+                              }`}
+                              title={
+                                copiedApiKeyId === apiKey?._id
+                                  ? "Copied!"
+                                  : "Copy API Key"
+                              }
+                            >
+                              {copiedApiKeyId === apiKey?._id ? (
+                                <span className="text-xs">Copied!</span>
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
                             </Button>
-                            <Button variant="outline" size="sm">
-                              <Download className="w-4 h-4" />
+
+                            <Button
+                              onClick={() => handleToggleApiKeyVisibility(apiKey._id)}
+                            >
+                              {viewApiKey[apiKey._id] ? (
+                                <Eye className=" h-2 w-2" />
+                              ) : (
+                                <EyeOff className="h-2 w-2 " />
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -994,7 +1094,7 @@ const Dashboard = () => {
       </div>
 
       {/* update card deatils or add card deatils */}
-       {showUpdateCard && (
+      {showUpdateCard && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-6">
@@ -1013,7 +1113,6 @@ const Dashboard = () => {
               <div className="space-y-2">
                 <Label htmlFor="cardNumber">Card Information</Label>
                 <Input
-                
                   id="cardNumber"
                   value={editForm.name}
                   onChange={(e) =>
@@ -1025,9 +1124,7 @@ const Dashboard = () => {
               </div>
 
               <div className="space-y-2">
-                
                 <h2>Avaiable Soon</h2>
-              
               </div>
 
               <div className="flex space-x-3 pt-4">
