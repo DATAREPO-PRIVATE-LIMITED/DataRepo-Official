@@ -16,7 +16,8 @@ const apiKeySchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "Api"
     },
-    
+    apiName: { type: String },
+
     usageCount: { type: Number, default: 0 },
     usageLimit: { type: Number },
 

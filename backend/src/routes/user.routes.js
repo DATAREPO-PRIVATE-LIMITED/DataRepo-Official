@@ -10,7 +10,7 @@ router.post("/login", login)
 router.post("/refresh-token", refreshAccessToken)
 router.post("/contact", addEquiry)
 router.get("/getAllApi", getAllApi)
-router.get("/get-single-api/:id", getSingleApi)
+router.get("/get-single-api/:apiId", getSingleApi)
 
 
 router.get("/me", authenticate, getCurrentUser)

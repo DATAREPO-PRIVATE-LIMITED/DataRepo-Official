@@ -31,8 +31,8 @@ export const getAllApi = async () => {
   // ApiResponse shape: { message, data, statusCode }
   return resp.data?.data;
 }
-export const getSingleApi = async (id) => {
-  const resp = await AxiosInstance.get(`/users/get-single-api/${id}`);
+export const getSingleApi = async (apiId) => {
+  const resp = await AxiosInstance.get(`/users/get-single-api/${apiId}`);
   // ApiResponse shape: { message, data, statusCode }
   return resp.data?.data;
 }
@@ -62,9 +62,15 @@ export const generateApiKey = async(apiId) => {
 
 // fetch apiKey
 
-export const fetchApiKey = async() => {
-  const resp = await AxiosInstance.get("/keys/get-api-key")
+export const fetchApiKey = async(apiId) => {
+  const resp = await AxiosInstance.get(`/keys/get-api-key/${apiId}`)
    return resp.data?.data
+}
+
+//fetch all services 
+export const fetchAllServices = async() => {
+  const resp = await AxiosInstance.get("/keys/get-all-services")
+  return resp.data
 }
 
 

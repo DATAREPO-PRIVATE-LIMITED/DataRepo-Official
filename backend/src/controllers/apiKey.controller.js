@@ -5,6 +5,8 @@ import asyncHandler from "../utils/asyncHandler.js"
 import crypto from "crypto"
 import { ApiKey } from "../models/apiKey.models.js"
 import { User } from "../models/user.models.js"
+import { Api } from "../models/api.models.js"
+
 
 const generateApiKey = asyncHandler(async (req, res) => {
 
@@ -25,10 +27,16 @@ const generateApiKey = asyncHandler(async (req, res) => {
         throw new ErrorHandler("login again ", 401)
     }
 
+    const apiName = await Api.findById(apiId)
+
+    if (!apiName) {
+        throw new ErrorHandler("api not found , try again ! ", 401)
+    }
 
     const newApiKey = await ApiKey.create({
         userId: userId,
         serviceApi: apiId,
+        apiName: apiName.name,
         apiKey: key
     })
 
@@ -46,21 +54,45 @@ const generateApiKey = asyncHandler(async (req, res) => {
 
 const getApiKey = asyncHandler(async (req, res) => {
 
-    const { userId } = req.myUser._id
+    const userId = req.myUser._id
+    const apiId = req.params.apiId
 
     const user = await User.findOne(userId)
+
+
     if (!user) {
-        throw new ErrorHandler("user not authrised , please login again !", 401)
+        throw new ErrorHandler("user not authorised , please login again !", 401)
     }
 
-    const apiUser = await ApiKey.findOne(userId)
+   const service = user.services.find(
+  (ele) => String(ele.serviceApi._id) === String(apiId)
+);
+    
+if (!service) {
+  throw new ErrorHandler("No API key found, please generate first", 404);
+}
 
-    if (!apiUser) {
-        throw new ErrorHandler(" no service found , generate Api key first !", 404)
-    }
+const key = service.apiKey; // or service.serviceApi.apiKey if the key is nested
+
 
     res.status(200).json(
-        new ApiResponse("apikey fetched successfully", apiUser?.apiKey, 200)
+        new ApiResponse("apikey fetched successfully", key, 200)
+    )
+})
+
+const getAllServices = asyncHandler(async (req, res) => {
+
+
+    const { _id } = req.myUser
+
+    const user = await User.findById(_id)
+    if (!user) {
+        throw new ErrorHandler("user not authorised , please login again", 401)
+    }
+
+
+    res.status(200).json(
+        new ApiResponse("all services fetched successfully", user.services, 200)
     )
 })
 
@@ -72,4 +104,4 @@ const healthCheck = asyncHandler(async (req, res) => {
 })
 
 
-export { generateApiKey, healthCheck, getApiKey }
+export { generateApiKey, healthCheck, getApiKey, getAllServices }

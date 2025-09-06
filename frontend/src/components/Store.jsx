@@ -21,6 +21,8 @@ import {
   fetchApiKey,
 } from "../utils/userApi";
 
+import { useParams } from "react-router-dom";
+
 const Store = () => {
   const [singleApi, setsingleApi] = useState(null);
   const [copiedApiId, setCopiedApiId] = useState(null);
@@ -33,6 +35,25 @@ const Store = () => {
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState(null);
   const [viewApiKey, setViewApiKey] = useState(false);
+
+  //extract apiId from url
+  const { apiId } = useParams();
+
+  //fetching the api
+  useEffect(() => {
+    let fetchApi = async (apiId) => {
+      try {
+        let data = await getSingleApi(apiId);
+
+        return setsingleApi(data);
+      } catch (error) {
+        console.log("eeror while fetching the api", error);
+      }
+    };
+    if (apiId) {
+      fetchApi(apiId);
+    }
+  }, [apiId]);
 
   // handle generate key
   const hanldeGenerateKey = async () => {
@@ -65,8 +86,8 @@ const Store = () => {
 
     setTimeout(() => {
       setLoading(false);
-    setgeneratingKey(false);
-    }, 1000)
+      setgeneratingKey(false);
+    }, 1000);
   };
 
   // handle copy api key
@@ -118,32 +139,21 @@ const Store = () => {
     }
   };
 
-  //fetching the api
-  useEffect(() => {
-    let fetchApi = async (id) => {
-      try {
-        let data = await getSingleApi(id);
-        return setsingleApi(data);
-      } catch (error) {
-        console.log("eeror while fetching the api", error);
-      }
-    };
-    fetchApi();
-  }, []);
+  console.log("key is -----> ", singleApi);
 
   useEffect(() => {
     let getApiKey = async () => {
       try {
-        let data = await fetchApiKey();
-        console.log("key is -----> ", data);
-
-        return setApiKey(data);
+        if (apiId) {
+          let data = await fetchApiKey(apiId);
+          return setApiKey(data);
+        }
       } catch (error) {
         console.log("unable to fetched the api key", error);
       }
     };
     getApiKey();
-  }, []);
+  }, [apiId]);
 
   return (
     <>

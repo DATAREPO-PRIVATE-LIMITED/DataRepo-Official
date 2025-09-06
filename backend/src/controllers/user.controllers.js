@@ -256,9 +256,9 @@ const getAllApi = asyncHandler(async (req, res) => {
 })
 const getSingleApi = asyncHandler(async (req, res) => {
 
-let { apiID } = req.params.id
+let  apiID  = req.params.apiId
 
-    let singleApi = await Api.findOne(apiID)
+    let singleApi = await Api.findById(apiID)
 
     if (!singleApi) {
         throw new ErrorHandler("unable to fetch api", 404)
