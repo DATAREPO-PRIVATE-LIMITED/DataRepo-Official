@@ -16,10 +16,26 @@ const apiKeySchema = new mongoose.Schema({
         type: mongoose.Types.ObjectId,
         ref: "Api"
     },
-    apiName: { type: String },
+    apiName: {
+        type: String
+    },
 
-    usageCount: { type: Number, default: 0 },
-    usageLimit: { type: Number },
+    usageCount: {
+        type: Number,
+        default: 0
+    },
+    usageLimit: {
+        type: Number
+    },
+
+    billingCycleStart: {
+        type: Date,
+        required: true,
+    },
+    billingCycleEnd: {
+        type: Date,
+        required: true,
+    },
 
 }, { timestamps: true })
 
