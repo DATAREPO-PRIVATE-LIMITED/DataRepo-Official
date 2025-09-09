@@ -73,4 +73,23 @@ export const fetchAllServices = async() => {
   return resp.data
 }
 
+//create order id and payment id 
+export const createPaymentAuthorised = async() => {
+  const resp = await AxiosInstance.post("/users/authorise-payment")
+
+  return resp.data
+}
+
+// authorised user by payment on 1 rs
+export const handlePaymentAuth = async (userId, response) => {
+  await AxiosInstance.post("/users/save-payment-auth", {
+    userId,
+    paymentId: response.razorpay_payment_id,
+    orderId: response.razorpay_order_id,
+    signature: response.razorpay_signature,
+  });
+};
+
+
+
 

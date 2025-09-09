@@ -36,6 +36,15 @@ const userSchema = new mongoose.Schema({
     services: {
         type: [Object],
         default: []
+    },
+    razorpayCustomerId:{
+        type:String
+    },
+    paymentMethodToken:{
+        type: String
+    },
+    isPaymentAuthorized:{
+        type: Boolean
     }
 }, { timestamps: true , minimize:false})
 

@@ -33,11 +33,23 @@ const generateApiKey = asyncHandler(async (req, res) => {
         throw new ErrorHandler("api not found , try again ! ", 401)
     }
 
+    // Enforce payment authorization for first-time API key generation
+    if ((!user.services || user.services.length === 0) && !user.isPaymentAuthorized) {
+        throw new ErrorHandler("Payment authorization required before generating first API key", 402);
+    }
+
+    const billingCycleStart = new Date();
+    const billingCycleEnd = new Date(billingCycleStart);
+    billingCycleEnd.setMonth(billingCycleEnd.getMonth() + 1);
+
     const newApiKey = await ApiKey.create({
         userId: userId,
         serviceApi: apiId,
         apiName: apiName.name,
-        apiKey: key
+        apiKey: key,
+        usageLimit: apiName.rateLimit || undefined,
+        billingCycleStart,
+        billingCycleEnd
     })
 
     if (!newApiKey) {

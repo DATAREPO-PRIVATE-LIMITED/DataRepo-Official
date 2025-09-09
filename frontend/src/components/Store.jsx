@@ -19,6 +19,8 @@ import {
   getAllApi,
   getSingleApi,
   fetchApiKey,
+  createPaymentAuthorised,
+  handlePaymentAuth,
 } from "../utils/userApi";
 
 import { useParams } from "react-router-dom";
@@ -30,11 +32,19 @@ const Store = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+
+
+
+
+
+  
+
   // generating api key
   const [generatingKey, setgeneratingKey] = useState(false);
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState(null);
   const [viewApiKey, setViewApiKey] = useState(false);
+  const [paymentAuth, setpaymentAuth] = useState(false)
 
   //extract apiId from url
   const { apiId } = useParams();
@@ -80,7 +90,22 @@ const Store = () => {
         setLoading(false);
         setgeneratingKey(false);
       } catch (error) {
-        console.log("unable to generate api key , please try again !");
+        // If first-time requires payment auth, trigger payment flow then retry
+        if (error?.response?.status === 402) {
+          try {
+            await startPaymentAuthorization();
+            const generatedApiKey = await generateApiKey(singleApi._id);
+            let key = JSON.stringify(generatedApiKey);
+            setApiKey(key);
+          } catch (err) {
+            console.log("Payment authorization or key generation failed", err);
+          } finally {
+            setLoading(false);
+            setgeneratingKey(false);
+          }
+        } else {
+          console.log("unable to generate api key , please try again !");
+        }
       }
     }
 
@@ -139,7 +164,7 @@ const Store = () => {
     }
   };
 
-  console.log("key is -----> ", singleApi);
+
 
   useEffect(() => {
     let getApiKey = async () => {
@@ -155,12 +180,71 @@ const Store = () => {
     getApiKey();
   }, [apiId]);
 
+
+  
+
+  // Load Razorpay checkout script
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) return resolve(true);
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const startPaymentAuthorization = async () => {
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      throw new Error("Razorpay SDK failed to load");
+    }
+
+    const orderData = await createPaymentAuthorised();
+    const { orderId, key } = orderData || {};
+    if (!(orderId && key)) {
+      throw new Error("Unable to create payment order");
+    }
+
+    return new Promise((resolve, reject) => {
+      const options = {
+        key,
+        order_id: orderId,
+        name: "Payment Authorization",
+        description: "Authorize payment to generate API keys",
+        handler: async function (response) {
+          try {
+            await handlePaymentAuth(user?._id, response);
+            resolve(true);
+          } catch (e) {
+            reject(e);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            reject(new Error("Payment authorization dismissed"));
+          },
+        },
+        theme: { color: "#4F46E5" },
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    });
+  };
+
   return (
     <>
       {/* API Cards Section */}
       <h2 className="flex flex-row justify-center items-center mt-15 text-3xl font-bold text-center mb-8">
         Generate Your Api Key
       </h2>
+
 
       <div className="mt-20 w-[90%] mx-auto mb-15 ">
         <div className=" mt-16 mx-auto grid  grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-25  p-2">
