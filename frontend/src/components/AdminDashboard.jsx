@@ -44,7 +44,7 @@ import {
   Upload,
 } from "lucide-react";
 
-import { getDashboardStats, getEnquiryData } from "../utils/adminApi";
+import { getDashboardStats, getEnquiryData, getAllUsers, getServicesStatus, getBillingData, getAnalyticsData, updateUserStatus, deleteUser, adminCreateUser, adminUpdateUser } from "../utils/adminApi";
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -53,10 +53,14 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [isSavingUser, setIsSavingUser] = useState(false);
 
   const [dashboardStats, setDashboardStats] = useState(null);
-
+  const [analytics, setAnalytics] = useState(null);
   const [enquiryDataList, setEnquiryDataList] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [services, setServices] = useState([]);
+  const [billingRows, setBillingRows] = useState([]);
 
   useEffect(() => {
     const fetchEnquiryList = async () => {
@@ -74,16 +78,28 @@ const AdminDashboard = () => {
   console.log("enquiry list ", enquiryDataList);
 
   useEffect(() => {
-    const fetchDashboard = async () => {
+    const fetchAll = async () => {
       try {
-        const response = await getDashboardStats();
-        setDashboardStats(response);
+        const [statsResp, usersResp, servicesResp, billingResp, analyticsResp] = await Promise.all([
+          getDashboardStats(),
+          getAllUsers(),
+          getServicesStatus(),
+          getBillingData(),
+          getAnalyticsData(),
+        ]);
+
+        setDashboardStats(statsResp?.data?.data || statsResp?.data || statsResp);
+        setUsers(usersResp?.data?.data || usersResp?.data || usersResp || []);
+        setServices(servicesResp?.data?.data || servicesResp?.data || servicesResp || []);
+        const billingData = billingResp?.data?.data?.billingData || billingResp?.data?.billingData || [];
+        setBillingRows(billingData);
+        setAnalytics(analyticsResp?.data?.data || analyticsResp?.data || analyticsResp);
       } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
+        console.error("Error fetching admin data:", error);
       }
     };
 
-    fetchDashboard();
+    fetchAll();
   }, []);
 
   // Mock data for admin dashboard
@@ -245,7 +261,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const filteredUsers = mockUsers.filter(
+  const filteredUsers = (users.length ? users : mockUsers).filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -319,7 +335,7 @@ const AdminDashboard = () => {
                         Total Users
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockStats.totalUsers.toLocaleString()}
+                        {(dashboardStats?.users?.total ?? mockStats.totalUsers).toLocaleString()}
                       </p>
                       <p className="text-xs text-green-600">
                         +{mockStats.monthlyGrowth}% this month
@@ -340,7 +356,7 @@ const AdminDashboard = () => {
                         Total Revenue
                       </p>
                       <p className="text-2xl font-bold">
-                        ${mockStats.totalRevenue.toLocaleString()}
+                        ${(dashboardStats?.revenue?.total ?? mockStats.totalRevenue).toLocaleString()}
                       </p>
                       <p className="text-xs text-green-600">+8.2% this month</p>
                     </div>
@@ -357,7 +373,7 @@ const AdminDashboard = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">API Calls</p>
                       <p className="text-2xl font-bold">
-                        {mockStats.apiCalls.toLocaleString()}
+                        {(dashboardStats?.apiUsage?.monthlyCalls ?? mockStats.apiCalls).toLocaleString()}
                       </p>
                       <p className="text-xs text-green-600">
                         +15.3% this month
@@ -378,7 +394,7 @@ const AdminDashboard = () => {
                         System Health
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockStats.systemHealth}%
+                        {(dashboardStats?.system?.systemHealth ?? mockStats.systemHealth)}%
                       </p>
                       <p className="text-xs text-green-600">
                         All systems operational
@@ -425,7 +441,7 @@ const AdminDashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockServices.map((service) => (
+                    {(services.length ? services : mockServices).map((service) => (
                       <div
                         key={service.id}
                         className="flex items-center justify-between"
@@ -478,7 +494,12 @@ const AdminDashboard = () => {
                   Filter
                 </Button>
               </div>
-              
+              <div className="flex items-center space-x-2">
+                <Button onClick={() => { setSelectedUser({ name: '', email: '', role: 'user', status: 'active' }); setShowUserModal(true); }}>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  New User
+                </Button>
+              </div>
             </div>
 
             <Card>
@@ -561,14 +582,35 @@ const AdminDashboard = () => {
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center space-x-2">
-                              <Button variant="outline" size="sm">
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                              <Button variant="outline" size="sm">
+                              <Button variant="outline" size="sm" onClick={() => { setSelectedUser(user); setShowUserModal(true); }}>
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button variant="outline" size="sm">
-                                <MoreHorizontal className="w-4 h-4" />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    const next = user.status === 'active' ? 'suspended' : 'active';
+                                    await updateUserStatus(user._id || user.id, next);
+                                    const refreshed = await getAllUsers();
+                                    setUsers(refreshed?.data?.data || refreshed?.data || refreshed || []);
+                                  } catch (e) { console.error('status change failed', e); }
+                                }}
+                              >
+                                <Shield className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    await deleteUser(user._id || user.id);
+                                    const refreshed = await getAllUsers();
+                                    setUsers(refreshed?.data?.data || refreshed?.data || refreshed || []);
+                                  } catch (e) { console.error('delete failed', e); }
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
                           </td>
@@ -591,7 +633,7 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {mockServices.map((service) => (
+                  {(services.length ? services : mockServices).map((service) => (
                     <Card key={service.id} className="border-2">
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
@@ -627,7 +669,7 @@ const AdminDashboard = () => {
                           <div className="flex justify-between text-sm">
                             <span>Total Requests:</span>
                             <span className="font-medium">
-                              {service.requests.toLocaleString()}
+                              {service.requests?.toLocaleString?.() || 0}
                             </span>
                           </div>
                           <div className="flex justify-between text-sm">
@@ -697,7 +739,7 @@ const AdminDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {mockBillingData.map((billing) => (
+                      {(billingRows.length ? billingRows : mockBillingData).map((billing) => (
                         <tr
                           key={billing.id}
                           className="border-b hover:bg-muted/30"
@@ -765,26 +807,26 @@ const AdminDashboard = () => {
                         Total API Calls
                       </span>
                       <span className="font-bold">
-                        {mockStats.apiCalls.toLocaleString()}
+                        {(analytics?.apiUsage?.totalCalls ?? mockStats.apiCalls).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
                         Average Response Time
                       </span>
-                      <span className="font-bold">245ms</span>
+                      <span className="font-bold">{analytics?.apiUsage?.averageResponseTime ?? 245}ms</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
                         Success Rate
                       </span>
-                      <span className="font-bold">99.2%</span>
+                      <span className="font-bold">{analytics?.apiUsage?.successRate ?? 99.2}%</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
                         Peak Usage
                       </span>
-                      <span className="font-bold">2,500 req/min</span>
+                      <span className="font-bold">{analytics?.apiUsage?.peakUsage ?? 2500} req/min</span>
                     </div>
                   </div>
                 </CardContent>
@@ -801,7 +843,7 @@ const AdminDashboard = () => {
                         Monthly Revenue
                       </span>
                       <span className="font-bold">
-                        ${mockStats.totalRevenue.toLocaleString()}
+                        ${(analytics?.revenue?.monthly ?? mockStats.totalRevenue).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -809,20 +851,20 @@ const AdminDashboard = () => {
                         Growth Rate
                       </span>
                       <span className="font-bold text-green-600">
-                        +{mockStats.monthlyGrowth}%
+                        +{(analytics?.revenue?.growthRate ?? mockStats.monthlyGrowth)}%
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
                         Active Subscriptions
                       </span>
-                      <span className="font-bold">{mockStats.activeUsers}</span>
+                      <span className="font-bold">{analytics?.userActivity?.activeUsers ?? dashboardStats?.users?.active ?? mockStats.activeUsers}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
                         Average Revenue per User
                       </span>
-                      <span className="font-bold">$36.50</span>
+                      <span className="font-bold">${analytics?.revenue?.averagePerUser ?? 36.50}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -875,6 +917,58 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+      {showUserModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">{selectedUser?._id || selectedUser?.id ? 'Edit User' : 'Create User'}</h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowUserModal(false)} className="h-8 w-8 p-0">
+                ×
+              </Button>
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input value={selectedUser?.name || ''} onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input value={selectedUser?.email || ''} onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Role</Label>
+                <Input value={selectedUser?.role || 'user'} onChange={(e) => setSelectedUser({ ...selectedUser, role: e.target.value })} />
+              </div>
+              {!(selectedUser?._id || selectedUser?.id) && (
+                <div className="space-y-2">
+                  <Label>Password</Label>
+                  <Input type="password" value={selectedUser?.password || ''} onChange={(e) => setSelectedUser({ ...selectedUser, password: e.target.value })} />
+                </div>
+              )}
+              <div className="flex space-x-3 pt-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowUserModal(false)}>Cancel</Button>
+                <Button className="flex-1" disabled={isSavingUser} onClick={async () => {
+                  try {
+                    setIsSavingUser(true);
+                    if (selectedUser?._id || selectedUser?.id) {
+                      await adminUpdateUser(selectedUser._id || selectedUser.id, { name: selectedUser.name, email: selectedUser.email, role: selectedUser.role, status: selectedUser.status });
+                    } else {
+                      await adminCreateUser({ name: selectedUser.name, email: selectedUser.email, password: selectedUser.password, role: selectedUser.role, status: selectedUser.status || 'active' });
+                    }
+                    const refreshed = await getAllUsers();
+                    setUsers(refreshed?.data?.data || refreshed?.data || refreshed || []);
+                    setShowUserModal(false);
+                  } catch (e) {
+                    console.error('save user failed', e);
+                  } finally {
+                    setIsSavingUser(false);
+                  }
+                }}>{isSavingUser ? 'Saving...' : 'Save'}</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
