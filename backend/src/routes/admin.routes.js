@@ -2,7 +2,10 @@ import express from "express";
 import {
     getAllUsers,
     getUserById,
-
+    createUserAdmin,
+    updateUserAdmin,
+    updateUserStatusAdmin,
+    deleteUserAdmin,
     getDashboardStats,
     getServicesStatus,
     getBillingData,
@@ -27,6 +30,10 @@ router.get("/analytics", getAnalyticsData);
 // User Management
 router.get("/users", getAllUsers);
 router.get("/users/:userId", getUserById);
+router.post("/users", createUserAdmin);
+router.put("/users/:userId", updateUserAdmin);
+router.patch("/users/:userId/status", updateUserStatusAdmin);
+router.delete("/users/:userId", deleteUserAdmin);
 
 // add api
 router.post("/add-api", addApi)

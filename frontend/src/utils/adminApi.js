@@ -45,6 +45,14 @@ export const deleteUser = (userId) => {
   return adminApi.delete(`/users/${userId}`);
 };
 
+export const adminCreateUser = (userData) => {
+  return adminApi.post('/users', userData);
+};
+
+export const adminUpdateUser = (userId, userData) => {
+  return adminApi.put(`/users/${userId}`, userData);
+};
+
 // Services Monitoring
 export const getServicesStatus = () => {
   return adminApi.get('/services/status');

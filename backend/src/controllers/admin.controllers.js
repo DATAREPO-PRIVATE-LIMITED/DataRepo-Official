@@ -71,6 +71,54 @@ const getAllUsers = asyncHandler(async (req, res) => {
     );
 });
 
+// Create a user (admin)
+const createUserAdmin = asyncHandler(async (req, res) => {
+    const { name, email, password, role = 'user', status = 'active' } = req.body;
+    if (!name || !email || !password) {
+        throw new ErrorHandler("name, email, password are required", 400);
+    }
+    const exists = await User.findOne({ email });
+    if (exists) {
+        throw new ErrorHandler("User already exists", 409);
+    }
+    const user = await User.create({ name, email, password, role, status });
+    res.status(201).json(new ApiResponse("User created", user, 201));
+});
+
+// Update a user (admin)
+const updateUserAdmin = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const { name, email, role, status } = req.body;
+    const user = await User.findByIdAndUpdate(
+        userId,
+        { $set: { name, email, role, status } },
+        { new: true }
+    ).select('-password -refreshToken');
+    if (!user) throw new ErrorHandler("User not found", 404);
+    res.status(200).json(new ApiResponse("User updated", user, 200));
+});
+
+// Update only status (admin)
+const updateUserStatusAdmin = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const { status } = req.body;
+    if (!['active', 'suspended'].includes(status)) {
+        throw new ErrorHandler("Invalid status", 400);
+    }
+    const user = await User.findByIdAndUpdate(userId, { $set: { status } }, { new: true })
+        .select('-password -refreshToken');
+    if (!user) throw new ErrorHandler("User not found", 404);
+    res.status(200).json(new ApiResponse("User status updated", user, 200));
+});
+
+// Delete a user (admin)
+const deleteUserAdmin = asyncHandler(async (req, res) => {
+    const { userId } = req.params;
+    const deleted = await User.findByIdAndDelete(userId);
+    if (!deleted) throw new ErrorHandler("User not found", 404);
+    res.status(200).json(new ApiResponse("User deleted", { _id: userId }, 200));
+});
+
 // Get user by ID with detailed information
 const getUserById = asyncHandler(async (req, res) => {
     const { userId } = req.params;
@@ -331,6 +379,10 @@ const getEnquiryData = asyncHandler(async (req, res) => {
 export {
     getAllUsers,
     getUserById,
+    createUserAdmin,
+    updateUserAdmin,
+    updateUserStatusAdmin,
+    deleteUserAdmin,
     getDashboardStats,
     getServicesStatus,
     getBillingData,
