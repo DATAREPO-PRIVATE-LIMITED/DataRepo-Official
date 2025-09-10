@@ -39,6 +39,12 @@ import {
   changeUserPassword,
   fetchAllServices,
   updateUserProfileData,
+  getUsageSummary,
+  getRecentInvoices,
+  getPaymentMethod,
+  createPaymentAuthorised,
+  handlePaymentAuth,
+  getUserAnalytics,
 } from "../utils/userApi";
 
 const Dashboard = () => {
@@ -70,6 +76,10 @@ const Dashboard = () => {
   const [services, setServices] = useState([]);
   const [viewApiKey, setViewApiKey] = useState({});
   const [copiedApiKeyId, setCopiedApiKeyId] = useState(null);
+  const [usage, setUsage] = useState({ totalApis: 0, totalApiCalls: 0, currentBill: 0, ratePerRequest: 0 });
+  const [invoices, setInvoices] = useState([]);
+  const [paymentMethod, setPaymentMethod] = useState({ isAuthorized: false, card: null });
+  const [analytics, setAnalytics] = useState({ apiUsage: { totalCalls: 0, monthlyCalls: 0, dailyCalls: 0 }, billing: { ratePerRequest: 0, currentMonthBill: 0 } });
 
   // fetch all services of user
   useEffect(() => {
@@ -85,6 +95,47 @@ const Dashboard = () => {
     };
     fetchServices();
   }, []); // run only once on mount
+
+  // Fetch usage summary, invoices, and payment method
+  useEffect(() => {
+    const fetchUsage = async () => {
+      try {
+        const data = await getUsageSummary();
+        if (data) setUsage(data);
+      } catch (err) {
+        console.log("unable to fetch usage summary", err);
+      }
+    };
+    const fetchInvoices = async () => {
+      try {
+        const list = await getRecentInvoices();
+        setInvoices(list);
+      } catch (err) {
+        console.log("unable to fetch invoices", err);
+      }
+    };
+    const fetchPayment = async () => {
+      try {
+        const pm = await getPaymentMethod();
+        if (pm) setPaymentMethod(pm);
+      } catch (err) {
+        console.log("unable to fetch payment method", err);
+      }
+    };
+    const fetchAnalytics = async () => {
+      try {
+        const data = await getUserAnalytics();
+        if (data) setAnalytics(data);
+      } catch (err) {
+        console.log("unable to fetch analytics", err);
+      }
+    };
+
+    fetchUsage();
+    fetchInvoices();
+    fetchPayment();
+    fetchAnalytics();
+  }, []);
 
   // Redirect admin users to admin dashboard
   useEffect(() => {
@@ -341,6 +392,39 @@ const Dashboard = () => {
     setActiveTab("analytics");
   };
 
+  // Payment authorization via Razorpay Checkout
+  const handleUpdatePaymentMethod = async () => {
+    try {
+      const order = await createPaymentAuthorised();
+      const options = {
+        key: order.key,
+        amount: 100,
+        currency: "INR",
+        name: "Payment Authorization",
+        order_id: order.orderId,
+        handler: async function (response) {
+          try {
+            await handlePaymentAuth(user?._id, response);
+            setPaymentMethod({ isAuthorized: true, card: { brand: 'Razorpay', last4: String(response.razorpay_payment_id).slice(-4) } });
+            setShowUpdateCard(false);
+          } catch (err) {
+            console.log("failed to save payment auth", err);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            console.log('Payment modal closed');
+          }
+        },
+        theme: { color: "#4f46e5" }
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.log("unable to initiate payment authorization", err);
+    }
+  };
+
   // const handleDownloadInvoices = () => {
   //   try {
   //     // Export mock invoices to CSV (replace with real data when backend is ready)
@@ -464,10 +548,8 @@ const Dashboard = () => {
                       <Database className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">
-                        Total APIs
-                      </p>
-                      <p className="text-2xl font-bold">3</p>
+                      <p className="text-sm text-muted-foreground">Total APIs</p>
+                      <p className="text-2xl font-bold">{usage.totalApis}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -481,9 +563,7 @@ const Dashboard = () => {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">API Calls</p>
-                      <p className="text-2xl font-bold">
-                        {mockBillingData.apiCalls.toLocaleString()}
-                      </p>
+                      <p className="text-2xl font-bold">{usage.totalApiCalls.toLocaleString()}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -496,12 +576,8 @@ const Dashboard = () => {
                       <DollarSign className="w-5 h-5 text-purple-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">
-                        Current Bill
-                      </p>
-                      <p className="text-2xl font-bold">
-                        ${mockBillingData.currentMonthBill}
-                      </p>
+                      <p className="text-sm text-muted-foreground">Current Bill</p>
+                      <p className="text-2xl font-bold">${usage.currentBill}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -514,12 +590,8 @@ const Dashboard = () => {
                       <TrendingUp className="w-5 h-5 text-orange-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">
-                        Rate/Request
-                      </p>
-                      <p className="text-2xl font-bold">
-                        ${mockBillingData.ratePerRequest}
-                      </p>
+                      <p className="text-sm text-muted-foreground">Rate/Request</p>
+                      <p className="text-2xl font-bold">${usage.ratePerRequest}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -578,17 +650,11 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Billing Plan</span>
-                      <span className="text-sm">
-                        {mockBillingData.currentPlan}
-                      </span>
+                      <span className="text-sm">Pay As You Use</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Next Billing</span>
-                      <span className="text-sm">
-                        {new Date(
-                          mockBillingData.nextBilling
-                        ).toLocaleDateString()}
-                      </span>
+                      <span className="text-sm">{new Date(user?.createdAt || Date.now()).toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="font-medium">API Keys</span>
@@ -719,9 +785,7 @@ const Dashboard = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Rate per API request:</span>
-                        <span className="font-medium">
-                          ${mockBillingData.ratePerRequest}
-                        </span>
+                        <span className="font-medium">${usage.ratePerRequest}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Billing cycle:</span>
@@ -729,9 +793,7 @@ const Dashboard = () => {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Example:</span>
-                        <span className="font-medium">
-                          5,000 requests = ${mockBillingData.currentMonthBill}
-                        </span>
+                        <span className="font-medium">Example: 5,000 requests = {(5000 * (usage.ratePerRequest || 0)).toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -758,13 +820,18 @@ const Dashboard = () => {
                           <CreditCard className="w-5 h-5 text-blue-600" />
                         </div>
                         <div>
-                          <p className="font-medium">
-                            {mockBillingData.cardBrand} ••••{" "}
-                            {mockBillingData.cardLast4}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Expires {mockBillingData.cardExpiry}
-                          </p>
+                          {paymentMethod.isAuthorized && paymentMethod.card ? (
+                            <>
+                              <p className="font-medium">{paymentMethod.card.brand} •••• {paymentMethod.card.last4}</p>
+                              {paymentMethod.card.expiry ? (
+                                <p className="text-sm text-muted-foreground">Expires {paymentMethod.card.expiry}</p>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">Saved for auto-billing</p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">No card saved. Authorize a payment method.</p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -786,43 +853,31 @@ const Dashboard = () => {
                         <span className="text-muted-foreground">
                           Pricing Model:
                         </span>
-                        <span className="font-medium">
-                          {mockBillingData.currentPlan}
-                        </span>
+                        <span className="font-medium">Pay As You Use</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">
                           Rate per Request:
                         </span>
-                        <span className="font-medium">
-                          ${mockBillingData.ratePerRequest}
-                        </span>
+                        <span className="font-medium">${usage.ratePerRequest}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">
                           Current Month Bill:
                         </span>
-                        <span className="font-extrabold">
-                          ${mockBillingData.currentMonthBill}
-                        </span>
+                        <span className="font-extrabold">${usage.currentBill}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">
                           Last Month Bill:
                         </span>
-                        <span className="font-medium">
-                          ${mockBillingData.lastMonthBill}
-                        </span>
+                        <span className="font-medium">{(usage.totalApiCalls * (usage.ratePerRequest || 0)).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">
                           Next Billing:
                         </span>
-                        <span className="font-medium">
-                          {new Date(
-                            mockBillingData.nextBilling
-                          ).toLocaleDateString()}
-                        </span>
+                        <span className="font-medium">{new Date(user?.createdAt || Date.now()).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
@@ -851,7 +906,7 @@ const Dashboard = () => {
                   </div>
 
                   <div className="space-y-3">
-                    {mockInvoices.map((invoice) => (
+                    {invoices.map((invoice) => (
                       <div
                         key={invoice.id}
                         className="flex items-center justify-between p-3 border rounded-lg"
@@ -999,13 +1054,13 @@ const Dashboard = () => {
                     <div className="h-32 bg-muted/30 rounded-lg flex items-center justify-center">
                       <div className="text-center">
                         <p className="text-2xl font-bold text-primary">
-                          {mockBillingData.apiCalls.toLocaleString()}
+                          {analytics.apiUsage.monthlyCalls?.toLocaleString?.() || 0}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           Total calls
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          ${mockBillingData.ratePerRequest} per request
+                          ${analytics.billing.ratePerRequest} per request
                         </p>
                       </div>
                     </div>
@@ -1017,14 +1072,14 @@ const Dashboard = () => {
                     <div className="h-32 bg-muted/30 rounded-lg flex items-center justify-center">
                       <div className="text-center">
                         <p className="text-2xl font-bold">
-                          ${mockBillingData.currentMonthBill}
+                          ${analytics.billing.currentMonthBill}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           This month's bill
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {mockBillingData.apiCalls.toLocaleString()} × $
-                          {mockBillingData.ratePerRequest}
+                          {analytics.apiUsage.monthlyCalls?.toLocaleString?.() || 0} × $
+                          {analytics.billing.ratePerRequest}
                         </p>
                       </div>
                     </div>
@@ -1108,49 +1163,23 @@ const Dashboard = () => {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-
-            <form onSubmit={handleEditProfile} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="cardNumber">Card Information</Label>
-                <Input
-                  id="cardNumber"
-                  value={editForm.name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
-                  }
-                  placeholder="Enter Card Number "
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <h2>Avaiable Soon</h2>
-              </div>
-
-              <div className="flex space-x-3 pt-4">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Use Razorpay to authorize your card for automatic billing.</p>
+              <div className="flex space-x-3 pt-2">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleCloseEditProfile}
+                  onClick={handleCloseUpdateCard}
                   className="flex-1"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isUpdating} className="flex-1">
-                  {isUpdating ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Changes
-                    </>
-                  )}
+                <Button onClick={handleUpdatePaymentMethod} className="flex-1">
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Authorize Card
                 </Button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

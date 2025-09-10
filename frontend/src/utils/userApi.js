@@ -90,6 +90,27 @@ export const handlePaymentAuth = async (userId, response) => {
   });
 };
 
+// Usage & Billing
+export const getUsageSummary = async () => {
+  const resp = await AxiosInstance.get("/users/usage-summary");
+  return resp.data?.data;
+}
+
+export const getRecentInvoices = async () => {
+  const resp = await AxiosInstance.get("/users/recent-invoices");
+  return resp.data?.data?.invoices || [];
+}
+
+export const getPaymentMethod = async () => {
+  const resp = await AxiosInstance.get("/users/payment-method");
+  return resp.data?.data;
+}
+
+export const getUserAnalytics = async () => {
+  const resp = await AxiosInstance.get("/users/analytics");
+  return resp.data?.data;
+}
+
 
 
 

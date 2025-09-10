@@ -6,6 +6,12 @@ import asyncHandler from "../utils/asyncHandler.js"
 import jwt from "jsonwebtoken"
 import { Enquiry } from "../models/enquiry.models.js"
 import { Api } from "../models/api.models.js"
+import { ApiKey } from "../models/apiKey.models.js"
+// Optional models; code guards if unavailable
+let PaymentModel = null;
+let BillingModel = null;
+try { PaymentModel = (await import("../models/payment.models.js")).Payment } catch (e) {}
+try { BillingModel = (await import("../models/billing.models.js")).Billing } catch (e) {}
 
 const generateAccesTokenAndRefreshToken = async (userId) => {
     try {
@@ -271,4 +277,110 @@ let  apiID  = req.params.apiId
 
 
 export { register, login, refreshAccessToken, logout, getCurrentUser, addEquiry, getAllApi, updateProfileDetails , changePassword, getSingleApi}
+
+// ====== Usage, Billing, and Payment (User) ======
+
+// GET /users/usage-summary
+export const getUsageSummary = asyncHandler(async (req, res) => {
+    const userId = req.myUser?._id;
+
+    // Total APIs user has (based on saved services)
+    const user = await User.findById(userId);
+    const totalApis = Array.isArray(user?.services) ? user.services.length : 0;
+
+    // Aggregate API calls from ApiKey usageCount for this user
+    const keys = await ApiKey.find({ userId });
+    const totalApiCalls = keys.reduce((sum, k) => sum + (k.usageCount || 0), 0);
+
+    // Rate per request (fallback constant until pricing per-API is implemented)
+    const ratePerRequest = 0.01;
+    const currentBill = Number((totalApiCalls * ratePerRequest).toFixed(2));
+
+    return res.status(200).json(
+        new ApiResponse("Usage summary fetched", {
+            totalApis,
+            totalApiCalls,
+            currentBill,
+            ratePerRequest
+        }, 200)
+    );
+});
+
+// GET /users/recent-invoices
+export const getRecentInvoices = asyncHandler(async (req, res) => {
+    const userId = req.myUser?._id;
+
+    // Try real payments if model is available; otherwise return empty list
+    let invoices = [];
+    if (PaymentModel) {
+        const payments = await PaymentModel.find({ userId })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .lean();
+
+        invoices = payments.map(p => ({
+            id: p.razorpayPaymentId || String(p._id),
+            date: p.createdAt,
+            amount: typeof p.amount === 'number' ? p.amount / 100 : p.amount, // assume paise to INR
+            status: p.status || 'authorized',
+            description: 'API Usage Charge'
+        }));
+    }
+
+    return res.status(200).json(
+        new ApiResponse("Recent invoices fetched", { invoices }, 200)
+    );
+});
+
+// GET /users/payment-method
+export const getPaymentMethod = asyncHandler(async (req, res) => {
+    const userId = req.myUser?._id;
+    const user = await User.findById(userId).lean();
+
+    const isAuthorized = !!user?.isPaymentAuthorized;
+    const token = user?.paymentMethodToken || null;
+
+    // We do not store card PAN; return masked token-based info only
+    const card = token ? {
+        brand: 'Razorpay',
+        last4: String(token).slice(-4).padStart(4, '•'),
+        expiry: null
+    } : null;
+
+    return res.status(200).json(
+        new ApiResponse("Payment method fetched", {
+            isAuthorized,
+            card
+        }, 200)
+    );
+});
+
+// GET /users/analytics
+export const getUserAnalytics = asyncHandler(async (req, res) => {
+    const userId = req.myUser?._id;
+
+    // Aggregate from keys
+    const keys = await ApiKey.find({ userId }).lean();
+    const totalCalls = keys.reduce((sum, k) => sum + (k.usageCount || 0), 0);
+
+    const ratePerRequest = 0.01;
+    const currentMonthBill = Number((totalCalls * ratePerRequest).toFixed(2));
+
+    const analytics = {
+        apiUsage: {
+            totalCalls,
+            monthlyCalls: totalCalls, // placeholder without time-series
+            dailyCalls: Math.round(totalCalls / 30),
+        },
+        billing: {
+            ratePerRequest,
+            currentMonthBill
+        }
+    };
+
+    return res.status(200).json(
+        new ApiResponse("Analytics data fetched", analytics, 200)
+    );
+});
+
 

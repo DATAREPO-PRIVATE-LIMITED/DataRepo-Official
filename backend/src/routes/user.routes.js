@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import authenticate from "../middlewares/authenticate.middleware.js"
-import { login, logout, refreshAccessToken, register, getCurrentUser, addEquiry, getAllApi, updateProfileDetails, changePassword, getSingleApi } from '../controllers/user.controllers.js'
+import { login, logout, refreshAccessToken, register, getCurrentUser, addEquiry, getAllApi, updateProfileDetails, changePassword, getSingleApi, getUsageSummary, getRecentInvoices, getPaymentMethod, getUserAnalytics } from '../controllers/user.controllers.js'
 import { createOrder, paymentAuth } from '../config/razorpay.js'
 
 
@@ -23,6 +23,12 @@ router.patch("/change-password", authenticate, changePassword)
 //payement authorize
 router.post("/authorise-payment", authenticate, createOrder)
 router.post("/save-payment-auth", authenticate, paymentAuth)
+
+// usage, invoices, payment method
+router.get("/usage-summary", authenticate, getUsageSummary)
+router.get("/recent-invoices", authenticate, getRecentInvoices)
+router.get("/payment-method", authenticate, getPaymentMethod)
+router.get("/analytics", authenticate, getUserAnalytics)
 
 
 
